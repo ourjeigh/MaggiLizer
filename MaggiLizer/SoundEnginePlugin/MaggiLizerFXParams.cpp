@@ -39,7 +39,7 @@ MaggiLizerFXParams::~MaggiLizerFXParams()
 MaggiLizerFXParams::MaggiLizerFXParams(const MaggiLizerFXParams& in_rParams)
 {
     RTPC = in_rParams.RTPC;
-    NonRTPC = in_rParams.NonRTPC;
+    //NonRTPC = in_rParams.NonRTPC;
     m_paramChangeHandler.SetAllParamChanges();
 }
 
@@ -53,7 +53,11 @@ AKRESULT MaggiLizerFXParams::Init(AK::IAkPluginMemAlloc* in_pAllocator, const vo
     if (in_ulBlockSize == 0)
     {
         // Initialize default parameters here
-        RTPC.fDummy = 0.0f;
+        RTPC.bReverse = false;
+        RTPC.fPitch = 0.0f;
+        RTPC.fSplice = 0.0f;
+        RTPC.fDelay = 0.0f;
+        RTPC.fRecycle = 0.0f;
         m_paramChangeHandler.SetAllParamChanges();
         return AK_Success;
     }
@@ -73,7 +77,11 @@ AKRESULT MaggiLizerFXParams::SetParamsBlock(const void* in_pParamsBlock, AkUInt3
     AkUInt8* pParamsBlock = (AkUInt8*)in_pParamsBlock;
 
     // Read bank data here
-    RTPC.fDummy = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    RTPC.bReverse = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    RTPC.fPitch = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    RTPC.fSplice = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    RTPC.fDelay = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    RTPC.fRecycle = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
     CHECKBANKDATASIZE(in_ulBlockSize, eResult);
     m_paramChangeHandler.SetAllParamChanges();
 
@@ -87,9 +95,25 @@ AKRESULT MaggiLizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
     // Handle parameter change here
     switch (in_paramID)
     {
-    case PARAM_DUMMY_ID:
-        RTPC.fDummy = *((AkReal32*)in_pValue);
-        m_paramChangeHandler.SetParamChange(PARAM_DUMMY_ID);
+    case PARAM_REVERSE_ID:
+        RTPC.bReverse = (*(AkReal32*)(in_pValue)) != 0;
+        m_paramChangeHandler.SetParamChange(PARAM_REVERSE_ID);
+        break;
+    case PARAM_PITCH_ID:
+        RTPC.fPitch = *(AkReal32*)(in_pValue);
+        m_paramChangeHandler.SetParamChange(PARAM_PITCH_ID);
+        break;
+    case PARAM_DELAY_ID:
+        RTPC.fPitch = *(AkReal32*)(in_pValue);
+        m_paramChangeHandler.SetParamChange(PARAM_DELAY_ID);
+        break;
+    case PARAM_SPLICE_ID:
+        RTPC.fSplice = *(AkReal32*)(in_pValue);
+        m_paramChangeHandler.SetParamChange(PARAM_SPLICE_ID);
+        break;
+    case PARAM_RECYCLE_ID:
+        RTPC.fRecycle = *(AkReal32*)(in_pValue);
+        m_paramChangeHandler.SetParamChange(PARAM_RECYCLE_ID);
         break;
     default:
         eResult = AK_InvalidParameter;

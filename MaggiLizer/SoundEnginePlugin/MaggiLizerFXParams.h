@@ -32,12 +32,20 @@ the specific language governing permissions and limitations under the License.
 
 // Add parameters IDs here, those IDs should map to the AudioEnginePropertyID
 // attributes in the xml property definition.
-static const AkPluginParamID PARAM_DUMMY_ID = 0;
-static const AkUInt32 NUM_PARAMS = 1;
+static const AkPluginParamID PARAM_REVERSE_ID = 0;
+static const AkPluginParamID PARAM_PITCH_ID = 1;
+static const AkPluginParamID PARAM_SPLICE_ID = 2;
+static const AkPluginParamID PARAM_DELAY_ID = 3;
+static const AkPluginParamID PARAM_RECYCLE_ID = 4;
+static const AkUInt32 NUM_PARAMS = 5;
 
 struct MaggiLizerRTPCParams
 {
-    AkReal32 fDummy;
+    bool bReverse;
+    AkReal32 fPitch;
+    AkReal32 fSplice;
+    AkReal32 fDelay;
+    AkReal32 fRecycle;
 };
 
 struct MaggiLizerNonRTPCParams
@@ -71,7 +79,7 @@ struct MaggiLizerFXParams
     AK::AkFXParameterChangeHandler<NUM_PARAMS> m_paramChangeHandler;
 
     MaggiLizerRTPCParams RTPC;
-    MaggiLizerNonRTPCParams NonRTPC;
+    //MaggiLizerNonRTPCParams NonRTPC;
 } AK_ALIGN_DMA;
 
 #endif // MaggiLizerFXParams_H

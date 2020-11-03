@@ -41,19 +41,62 @@ for the documentation about the plugin xml format
     </PluginInfo>
     <Properties>
       <!-- Add your property definitions here -->
-      <Property Name="Dummy" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Dummy">
-        <UserInterface Step="0.1" Fine="0.001" Decimals="3" UIMax="10" />
+			<Property Name="Reverse" Type="bool" SupportRTPCType="Exclusive" DisplayName="Reverse">
+				<DefaultValue>false</DefaultValue>
+				<AudioEnginePropertyID>0</AudioEnginePropertyID>
+			</Property>
+      <Property Name="Pitch" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Pitch">
+        <UserInterface Step="100" Fine="1" Decimals="0" UIMax="1200" />
         <DefaultValue>0.0</DefaultValue>
-        <AudioEnginePropertyID>0</AudioEnginePropertyID>
+        <AudioEnginePropertyID>1</AudioEnginePropertyID>
         <Restrictions>
           <ValueRestriction>
             <Range Type="Real32">
-              <Min>0.001</Min>
-              <Max>1000</Max>
+              <Min>-1200</Min>
+              <Max>1200</Max>
             </Range>
           </ValueRestriction>
         </Restrictions>
       </Property>
+			<Property Name="Splice" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Splice">
+				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
+				<DefaultValue>0.0</DefaultValue>
+				<AudioEnginePropertyID>2</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>0</Min>
+							<Max>2000</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
+			<Property Name="Delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
+				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
+				<DefaultValue>0.0</DefaultValue>
+				<AudioEnginePropertyID>3</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>0</Min>
+							<Max>2000</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
+			<Property Name="Recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
+				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
+				<DefaultValue>0.0</DefaultValue>
+				<AudioEnginePropertyID>4</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>0</Min>
+							<Max>100</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
     </Properties>
   </EffectPlugin>
 </PluginModule>

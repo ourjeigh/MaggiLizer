@@ -51,8 +51,9 @@ void MaggiLizerPlugin::SetPluginPropertySet(AK::Wwise::IPluginPropertySet* in_pP
 bool MaggiLizerPlugin::GetBankParameters(const GUID& in_guidPlatform, AK::Wwise::IWriteData* in_pDataWriter) const
 {
     // Write bank data here
+    // TODO: Not sure how to write all 5 parameters here
     CComVariant varProp;
-    m_pPSet->GetValue(in_guidPlatform, L"Dummy", varProp);
+    m_pPSet->GetValue(in_guidPlatform, L"Reverse", varProp);
     in_pDataWriter->WriteReal32(varProp.fltVal);
 
     return true;
