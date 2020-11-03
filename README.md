@@ -19,6 +19,13 @@ TODO
     - C++ ATL for v141 build tools (Individual Component)
     - C++ MFC for v141 build tools (Individual Component)
 
+### Generating Solutions
+
+- Locate wp.py
+  - For Wwise 2019.2.6 ->  C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.6.7381\Scripts\Build\Plugins\wp.py
+- Open Command Prompt in MaggiLizer\MaggiLizer
+- Run wp.py build Authoring -Debug -x x64_vc160
+
 ### Building
 
 - Locate wp.py
@@ -28,3 +35,8 @@ TODO
 - Example with default directories:
   - "C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.6.7381\Scripts\Build\Plugins\wp.py" build Authoring -c Debug -x x64_vc160
 - Use "wp.py build --help" for more options and info
+
+### Wwise Plugin Documentation
+
+- [Wwise Up On Air: Creating a Plug-In for Wwise](https://www.twitch.tv/videos/758625080)
+- [How to Create Wwise Sound Engine Effect Plug-ins](https://www.audiokinetic.com/library/edge/?source=SDK&id=soundengine_plugins_effects.html)
