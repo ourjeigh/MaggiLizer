@@ -3,7 +3,7 @@ Crystallizer knockoff Wwise Plugin
 
 
 ## Download The Libraries
-TODO
+https://github.com/rjmattingly/MaggiLizer/releases
 
 ## Working with the Source
 
@@ -24,7 +24,7 @@ TODO
 - Locate wp.py
   - For Wwise 2019.2.6 ->  C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.6.7381\Scripts\Build\Plugins\wp.py
 - Open Command Prompt in MaggiLizer\MaggiLizer
-- Run wp.py build Authoring -Debug -x x64_vc160
+- Run wp.py premake Authoring -Debug -x x64_vc160
 
 ### Building
 
@@ -35,6 +35,21 @@ TODO
 - Example with default directories:
   - "C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.6.7381\Scripts\Build\Plugins\wp.py" build Authoring -c Debug -x x64_vc160
 - Use "wp.py build --help" for more options and info
+
+### Debugging
+
+- Open MaggiLizer_Authoring_Windows_vc160.sln with Visual Studio 2019
+- Select the MaggiLizer project in the Solution Explorer (not MaggiLizerFX)
+- Open the Properties by right clicking or pressing Alt + Enter
+- Change the configuration (top left) to Debug
+- Change the Output Directory replacing '$Configuration' with 'Release'
+  - This is because the Wwise Authoring app does not look in the x64\Debug directory for plugins, so they need to be put in Release.
+- Open Wwise 2019 Authoring app
+- In Visual Studio: Select Debug > Attach to Process (Ctrl + Alt + P)
+- Select Wwise.exe and connect
+- You can now add breakpoints to the code 
+  - MaggiLizerFX::Execute is called every frame while the FX is processing audio so that's a good place.
+  - MaggiLizerFX::Init is called every time you press play in the Authoring app, followed immediately by Reset.
 
 ### Wwise Plugin Documentation
 

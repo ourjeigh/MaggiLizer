@@ -58,6 +58,7 @@ AKRESULT MaggiLizerFXParams::Init(AK::IAkPluginMemAlloc* in_pAllocator, const vo
         RTPC.fSplice = 0.0f;
         RTPC.fDelay = 0.0f;
         RTPC.fRecycle = 0.0f;
+        RTPC.fMix = 0.0f;
         m_paramChangeHandler.SetAllParamChanges();
         return AK_Success;
     }
@@ -82,6 +83,7 @@ AKRESULT MaggiLizerFXParams::SetParamsBlock(const void* in_pParamsBlock, AkUInt3
     RTPC.fSplice = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
     RTPC.fDelay = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
     RTPC.fRecycle = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    RTPC.fMix = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
     CHECKBANKDATASIZE(in_ulBlockSize, eResult);
     m_paramChangeHandler.SetAllParamChanges();
 
@@ -96,7 +98,7 @@ AKRESULT MaggiLizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
     switch (in_paramID)
     {
     case PARAM_REVERSE_ID:
-        RTPC.bReverse = (*(AkReal32*)(in_pValue)) != 0;
+        RTPC.bReverse = (*(AkReal32*)(in_pValue)) != 0; // bools are conveyed as 0 false, !=0 true
         m_paramChangeHandler.SetParamChange(PARAM_REVERSE_ID);
         break;
     case PARAM_PITCH_ID:
@@ -104,7 +106,7 @@ AKRESULT MaggiLizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
         m_paramChangeHandler.SetParamChange(PARAM_PITCH_ID);
         break;
     case PARAM_DELAY_ID:
-        RTPC.fPitch = *(AkReal32*)(in_pValue);
+        RTPC.fDelay = *(AkReal32*)(in_pValue);
         m_paramChangeHandler.SetParamChange(PARAM_DELAY_ID);
         break;
     case PARAM_SPLICE_ID:
@@ -112,9 +114,12 @@ AKRESULT MaggiLizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
         m_paramChangeHandler.SetParamChange(PARAM_SPLICE_ID);
         break;
     case PARAM_RECYCLE_ID:
-        RTPC.fRecycle = *(AkReal32*)(in_pValue);
+        RTPC.fRecycle = *(AkReal32*)(in_pValue) / 100; //convert from 0-100% to 0-1
         m_paramChangeHandler.SetParamChange(PARAM_RECYCLE_ID);
         break;
+    case PARAM_MIX_ID:
+        RTPC.fMix = *(AkReal32*)(in_pValue)/100; //convert from 0-100% to 0-1
+        m_paramChangeHandler.SetParamChange(PARAM_MIX_ID);
     default:
         eResult = AK_InvalidParameter;
         break;

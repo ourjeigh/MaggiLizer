@@ -37,6 +37,7 @@ static const AkPluginParamID PARAM_PITCH_ID = 1;
 static const AkPluginParamID PARAM_SPLICE_ID = 2;
 static const AkPluginParamID PARAM_DELAY_ID = 3;
 static const AkPluginParamID PARAM_RECYCLE_ID = 4;
+static const AkPluginParamID PARAM_MIX_ID = 5;
 static const AkUInt32 NUM_PARAMS = 5;
 
 struct MaggiLizerRTPCParams
@@ -46,6 +47,7 @@ struct MaggiLizerRTPCParams
     AkReal32 fSplice;
     AkReal32 fDelay;
     AkReal32 fRecycle;
+    AkReal32 fMix;
 };
 
 struct MaggiLizerNonRTPCParams

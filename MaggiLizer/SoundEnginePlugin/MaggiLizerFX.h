@@ -65,6 +65,16 @@ private:
     MaggiLizerFXParams* m_pParams;
     AK::IAkPluginMemAlloc* m_pAllocator;
     AK::IAkEffectPluginContext* m_pContext;
+    int sampleRate;
+    AkReal32** cachedBuffer;
+    AkReal32** playbackBuffer;
+    AkUInt32 uBufferSampleSize;
+    AkUInt32 uCurrentCachedBufferSample;
+    AkUInt32 uPlaybackSampleHead;
+
+    void ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer, int bufferSize, float speed, bool b_reverse);
+    void ClearBuffer(AkReal32* buffer, int bufferSize);
+    void CalculateBufferSampleSize(AK::IAkPluginParam* in_pParams);
 };
 
 #endif // MaggiLizerFX_H

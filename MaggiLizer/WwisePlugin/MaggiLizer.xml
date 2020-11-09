@@ -40,7 +40,6 @@ for the documentation about the plugin xml format
       </PlatformSupport>
     </PluginInfo>
     <Properties>
-      <!-- Add your property definitions here -->
 			<Property Name="Reverse" Type="bool" SupportRTPCType="Exclusive" DisplayName="Reverse">
 				<DefaultValue>false</DefaultValue>
 				<AudioEnginePropertyID>0</AudioEnginePropertyID>
@@ -71,7 +70,7 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="Delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
+			<Property Name="Delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay (Not Working)">
 				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
 				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>3</AudioEnginePropertyID>
@@ -84,10 +83,23 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="Recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
+			<Property Name="Recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle  (Not Working)">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
 				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>4</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>0</Min>
+							<Max>100</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
+			<Property Name="Mix" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Mix">
+				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
+				<DefaultValue>100.0</DefaultValue>
+				<AudioEnginePropertyID>5</AudioEnginePropertyID>
 				<Restrictions>
 					<ValueRestriction>
 						<Range Type="Real32">
