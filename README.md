@@ -4,6 +4,7 @@ Crystallizer knockoff Wwise Plugin
 
 ## Download The Libraries
 https://github.com/rjmattingly/MaggiLizer/releases
+Both the xml and the dll go in {YourWwiseInstallDirectory}\Authoring\x64\Release\bin\Plugins
 
 ## Working with the Source
 
