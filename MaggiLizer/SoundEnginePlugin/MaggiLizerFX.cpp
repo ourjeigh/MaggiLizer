@@ -28,7 +28,6 @@ the specific language governing permissions and limitations under the License.
 #include "../MaggiLizerConfig.h"
 
 #include <AK/AkWwiseSDKVersion.h>
-
 #include <math.h>
 
 AK::IAkPlugin* CreateMaggiLizerFX(AK::IAkPluginMemAlloc* in_pAllocator)
@@ -71,7 +70,7 @@ AKRESULT MaggiLizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
     CalculateBufferSampleSize(m_pParams);
 
     int numChannels = in_rFormat.GetNumChannels();
-    cachedBuffer = new AkReal32 * [numChannels];
+    cachedBuffer = new AkReal32* [numChannels];
     playbackBuffer = new AkReal32* [numChannels];
 
     for (int i = 0; i < numChannels; i++)
@@ -132,6 +131,7 @@ void MaggiLizerFX::Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkA
 
             // if cachedBuffer is full move it to playbackBuffer and clear
             // TODO: Need to figure out how to have this apply to all channels after trackers have been reset.
+            // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019522
             if (uCurrentCachedBufferSample + localBufferPosition >= uBufferSampleSize)
             {
                 ClearBuffer(playbackBuffer[curCh], 4 * sampleRate);
@@ -146,7 +146,7 @@ void MaggiLizerFX::Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkA
 
             float output = 0;
             
-            // TODO: this won't work to check for empty playback buffer at start.
+            // if the playbackBuffer samples are greater/less than +/-1 they're garbage values, output silence instead.
             if (playbackBuffer != nullptr && fabs((playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition]))<=1)
             {
                 output = playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition];
@@ -157,7 +157,6 @@ void MaggiLizerFX::Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkA
 
             pOutBuf[uFramesConsumed] = mixed;
 
-            //*pOutBuf++ = *pInBuf++;
             uFramesConsumed++;
             localBufferPosition++;
         }
@@ -204,7 +203,8 @@ void MaggiLizerFX::ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer,
         ReverseArray(inBuffer, bufferSize);
     }
     // TODO: If speed is changing the outBuffer size should change as well, and iteration should change
-    // to prevent old data from remaining in the playbackBuffer. Or playbackShould be zero'd out.
+    // to fill exactly the needed buffer size.
+    // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019952
     for (int i = 0; i < bufferSize; i++)
     {
         if (position >= bufferSize - 1)

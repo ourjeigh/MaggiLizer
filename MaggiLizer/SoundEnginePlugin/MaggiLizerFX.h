@@ -65,7 +65,7 @@ private:
     MaggiLizerFXParams* m_pParams;
     AK::IAkPluginMemAlloc* m_pAllocator;
     AK::IAkEffectPluginContext* m_pContext;
-    int sampleRate;
+    AkUInt32 sampleRate;
     AkReal32** cachedBuffer;
     AkReal32** playbackBuffer;
     AkUInt32 uBufferSampleSize;
