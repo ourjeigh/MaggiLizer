@@ -31,8 +31,7 @@ the specific language governing permissions and limitations under the License.
 
 /// See https://www.audiokinetic.com/library/edge/?source=SDK&id=soundengine__plugins__effects.html
 /// for the documentation about effect plug-ins
-class MaggiLizerFX
-    : public AK::IAkOutOfPlaceEffectPlugin
+class MaggiLizerFX : public AK::IAkInPlaceEffectPlugin
 {
 public:
     MaggiLizerFX();
@@ -40,7 +39,10 @@ public:
 
     /// Plug-in initialization.
     /// Prepares the plug-in for data processing, allocates memory and sets up the initial conditions.
-    AKRESULT Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectPluginContext* in_pContext, AK::IAkPluginParam* in_pParams, AkAudioFormat& in_rFormat);
+    AKRESULT Init(AK::IAkPluginMemAlloc*        in_pAllocator, 
+                  AK::IAkEffectPluginContext*   in_pContext, 
+                  AK::IAkPluginParam*           in_pParams, 
+                  AkAudioFormat&                in_rFormat);
 
     /// Release the resources upon termination of the plug-in.
     AKRESULT Term(AK::IAkPluginMemAlloc* in_pAllocator);
@@ -54,12 +56,10 @@ public:
     AKRESULT GetPluginInfo(AkPluginInfo& out_rPluginInfo);
 
     /// Effect plug-in DSP execution.
-    void Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkAudioBuffer* out_pBuffer);
+    void Execute(AkAudioBuffer* io_pBuffer);
 
-    /// Skips execution of some frames, when the voice is virtual playing from elapsed time.
-    /// This can be used to simulate processing that would have taken place (e.g. update internal state).
-    /// Return AK_DataReady or AK_NoMoreData, depending if there would be audio output or not at that point.
-    AKRESULT TimeSkip(AkUInt32& io_uFrames);
+    /// Execution processing when the voice is virtual. Nothing special to do for this effect.
+    AKRESULT TimeSkip(AkUInt32 in_uFrames) { return AK_DataReady; }
 
 private:
     MaggiLizerFXParams* m_pParams;

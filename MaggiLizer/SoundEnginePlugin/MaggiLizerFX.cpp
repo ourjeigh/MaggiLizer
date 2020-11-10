@@ -97,19 +97,19 @@ AKRESULT MaggiLizerFX::Reset()
 AKRESULT MaggiLizerFX::GetPluginInfo(AkPluginInfo& out_rPluginInfo)
 {
     out_rPluginInfo.eType = AkPluginTypeEffect;
-    out_rPluginInfo.bIsInPlace = false;
+    out_rPluginInfo.bIsInPlace = true;
     out_rPluginInfo.uBuildVersion = AK_WWISESDK_VERSION_COMBINED;
     return AK_Success;
 }
 
-void MaggiLizerFX::Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkAudioBuffer* out_pBuffer)
+void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
 {
     //Update Buffer Size
     CalculateBufferSampleSize(m_pParams);
 
-    const AkUInt32 uNumChannels = in_pBuffer->NumChannels();
+    const AkUInt32 uNumChannels = io_pBuffer->NumChannels();
 
-    AkUInt16 uFramesConsumed = 0;
+    AkUInt16 uFramesProcessed = 0;
 
     // Pitch change is just playback speed
     AkReal32 pitch = m_pParams->RTPC.fPitch;
@@ -118,16 +118,14 @@ void MaggiLizerFX::Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkA
 
     for (AkUInt32 curCh = 0; curCh < uNumChannels; ++curCh)
     {
-        AkReal32* AK_RESTRICT pInBuf = (AkReal32* AK_RESTRICT)in_pBuffer->GetChannel(curCh) + in_ulnOffset;
-        AkReal32* AK_RESTRICT pOutBuf = (AkReal32* AK_RESTRICT)out_pBuffer->GetChannel(curCh) + out_pBuffer->uValidFrames;
+        AkReal32* AK_RESTRICT pBuf = (AkReal32 * AK_RESTRICT)io_pBuffer->GetChannel(curCh);
 
-        uFramesConsumed = 0;
+        uFramesProcessed = 0;
        
         int localBufferPosition = 0 ;
-        while (uFramesConsumed < in_pBuffer->uValidFrames
-            && uFramesConsumed < out_pBuffer->MaxFrames())
+        while (uFramesProcessed < io_pBuffer->uValidFrames)
         {
-            float input = pInBuf[uFramesConsumed];
+            float input = pBuf[uFramesProcessed];
 
             // if cachedBuffer is full move it to playbackBuffer and clear
             // TODO: Need to figure out how to have this apply to all channels after trackers have been reset.
@@ -153,27 +151,17 @@ void MaggiLizerFX::Execute(AkAudioBuffer* in_pBuffer, AkUInt32 in_ulnOffset, AkA
             }
 
             // mix generated output with input buffer based on mix value.
-            float mixed = (input) * (1 - m_pParams->RTPC.fMix) + output * m_pParams->RTPC.fMix;
+            AkReal32 mixed = (input) * (1 - m_pParams->RTPC.fMix) + output * m_pParams->RTPC.fMix;
 
-            pOutBuf[uFramesConsumed] = mixed;
+            pBuf[uFramesProcessed] = mixed;
 
-            uFramesConsumed++;
+            uFramesProcessed++;
             localBufferPosition++;
         }
     }
 
-    uPlaybackSampleHead += uFramesConsumed;
-    uCurrentCachedBufferSample += uFramesConsumed;
-
-    in_pBuffer->uValidFrames -= uFramesConsumed;
-    out_pBuffer->uValidFrames += uFramesConsumed;
-
-    if (in_pBuffer->eState == AK_NoMoreData && in_pBuffer->uValidFrames == 0)
-        out_pBuffer->eState = AK_NoMoreData;
-    else if (out_pBuffer->uValidFrames == out_pBuffer->MaxFrames())
-        out_pBuffer->eState = AK_DataReady;
-    else
-        out_pBuffer->eState = AK_DataNeeded;
+    uPlaybackSampleHead += uFramesProcessed - 1;
+    uCurrentCachedBufferSample += uFramesProcessed - 1;
 }
 
 void SwapArrayValues(AkReal32* a, AkReal32* b)
@@ -233,9 +221,4 @@ void MaggiLizerFX::ClearBuffer(AkReal32* buffer, int bufferSize)
 void MaggiLizerFX::CalculateBufferSampleSize(AK::IAkPluginParam* in_pParams)
 {
     uBufferSampleSize = m_pParams->RTPC.fSplice / 1000 * sampleRate; // actual buffer based on splice size
-}
-
-AKRESULT MaggiLizerFX::TimeSkip(AkUInt32& io_uFrames)
-{
-    return AK_DataReady;
 }
