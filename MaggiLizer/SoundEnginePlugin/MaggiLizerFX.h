@@ -62,19 +62,21 @@ public:
     AKRESULT TimeSkip(AkUInt32 in_uFrames) { return AK_DataReady; }
 
 private:
-    MaggiLizerFXParams* m_pParams;
-    AK::IAkPluginMemAlloc* m_pAllocator;
+    MaggiLizerFXParams*         m_pParams;
+    AK::IAkPluginMemAlloc*      m_pAllocator;
     AK::IAkEffectPluginContext* m_pContext;
-    AkUInt32 sampleRate;
-    AkReal32** cachedBuffer;
-    AkReal32** playbackBuffer;
-    AkUInt32 uBufferSampleSize;
-    AkUInt32 uCurrentCachedBufferSample;
-    AkUInt32 uPlaybackSampleHead;
+    AkUInt32                    m_uSampleRate;
+    AkUInt32                    m_uBufferSampleSize;
+    AkUInt32                    m_uCurrentCachedBufferSample;
+    AkUInt32                    m_uPlaybackSampleHead;
+    AkReal32**                  m_paCachedBuffer;
+    AkReal32**                  m_paPlaybackBuffer;
 
-    void ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer, int bufferSize, float speed, bool b_reverse);
-    void ClearBuffer(AkReal32* buffer, int bufferSize);
+    void ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer, AkUInt16 bufferSize, AkReal32 speed, bool b_reverse);
+    void ClearBuffer(AkReal32* buffer, AkUInt16 bufferSize);
     void CalculateBufferSampleSize(AK::IAkPluginParam* in_pParams);
+    void ReverseArray(AkReal32* array, AkUInt16 array_size);
+    void SwapArrayValues(AkReal32* left, AkReal32* right);
 };
 
 #endif // MaggiLizerFX_H
