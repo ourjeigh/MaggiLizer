@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaggiLizer", "SoundEnginePlugin\MaggiLizer_Windows_vc140_shared.vcxproj", "{656D890B-CADD-D40E-1AF2-AB5980F90CAB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A} = {86176DA3-C616-6224-16DD-8D873C4DDF7A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaggiLizerFX", "SoundEnginePlugin\MaggiLizer_Windows_vc140_static.vcxproj", "{86176DA3-C616-6224-16DD-8D873C4DDF7A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Profile_EnableAsserts|Win32 = Profile_EnableAsserts|Win32
+		Profile_EnableAsserts|x64 = Profile_EnableAsserts|x64
+		Profile|Win32 = Profile|Win32
+		Profile|x64 = Profile|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Debug|Win32.Build.0 = Debug|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Debug|x64.ActiveCfg = Debug|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Debug|x64.Build.0 = Debug|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile_EnableAsserts|Win32.ActiveCfg = Profile_EnableAsserts|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile_EnableAsserts|Win32.Build.0 = Profile_EnableAsserts|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile_EnableAsserts|x64.ActiveCfg = Profile_EnableAsserts|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile_EnableAsserts|x64.Build.0 = Profile_EnableAsserts|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile|Win32.ActiveCfg = Profile|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile|Win32.Build.0 = Profile|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile|x64.ActiveCfg = Profile|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Profile|x64.Build.0 = Profile|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Release|Win32.ActiveCfg = Release|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Release|Win32.Build.0 = Release|Win32
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Release|x64.ActiveCfg = Release|x64
+		{656D890B-CADD-D40E-1AF2-AB5980F90CAB}.Release|x64.Build.0 = Release|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Debug|Win32.ActiveCfg = Debug(StaticCRT)|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Debug|Win32.Build.0 = Debug(StaticCRT)|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Debug|x64.ActiveCfg = Debug(StaticCRT)|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Debug|x64.Build.0 = Debug(StaticCRT)|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile_EnableAsserts|Win32.ActiveCfg = Profile(StaticCRT)_EnableAsserts|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile_EnableAsserts|Win32.Build.0 = Profile(StaticCRT)_EnableAsserts|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile_EnableAsserts|x64.ActiveCfg = Profile(StaticCRT)_EnableAsserts|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile_EnableAsserts|x64.Build.0 = Profile(StaticCRT)_EnableAsserts|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile|Win32.ActiveCfg = Profile(StaticCRT)|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile|Win32.Build.0 = Profile(StaticCRT)|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile|x64.ActiveCfg = Profile(StaticCRT)|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Profile|x64.Build.0 = Profile(StaticCRT)|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Release|Win32.ActiveCfg = Release(StaticCRT)|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Release|Win32.Build.0 = Release(StaticCRT)|Win32
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Release|x64.ActiveCfg = Release(StaticCRT)|x64
+		{86176DA3-C616-6224-16DD-8D873C4DDF7A}.Release|x64.Build.0 = Release(StaticCRT)|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

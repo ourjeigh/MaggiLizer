@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="MaggiLizer.h" />
+    <ClInclude Include="MaggiLizerPlugin.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MaggiLizer.cpp" />
+    <ClCompile Include="MaggiLizerPlugin.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MaggiLizer.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="MaggiLizer.xml" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaggiLizer", "WwisePlugin\MaggiLizer_Authoring_Windows_vc160.vcxproj", "{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349} = {DA350AC8-1540-A266-8A44-6AF98E5B9349}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaggiLizerFX", "SoundEnginePlugin\MaggiLizer_Windows_vc160_static.vcxproj", "{DA350AC8-1540-A266-8A44-6AF98E5B9349}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaggiLizerTests", "MaggiLizerTests\MaggiLizerTests.vcxproj", "{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}.Debug|x64.ActiveCfg = Debug|x64
+		{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}.Debug|x64.Build.0 = Debug|x64
+		{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}.Debug|x86.ActiveCfg = Debug|x64
+		{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}.Release|x64.ActiveCfg = Release|x64
+		{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}.Release|x64.Build.0 = Release|x64
+		{A8A78600-5FAE-090D-34BD-FC9B97BDBB84}.Release|x86.ActiveCfg = Release|x64
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Debug|x64.ActiveCfg = Debug|x64
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Debug|x64.Build.0 = Debug|x64
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Debug|x86.ActiveCfg = Debug|Win32
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Debug|x86.Build.0 = Debug|Win32
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Release|x64.ActiveCfg = Profile|x64
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Release|x64.Build.0 = Profile|x64
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Release|x86.ActiveCfg = Release|Win32
+		{DA350AC8-1540-A266-8A44-6AF98E5B9349}.Release|x86.Build.0 = Release|Win32
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Debug|x64.ActiveCfg = Debug|x64
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Debug|x64.Build.0 = Debug|x64
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Debug|x86.ActiveCfg = Debug|Win32
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Debug|x86.Build.0 = Debug|Win32
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Release|x64.ActiveCfg = Release|x64
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Release|x86.ActiveCfg = Release|Win32
+		{8D10D2D4-B557-46DE-9FA3-355F7C133AF1}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {43AFCDCE-9A81-43B5-B5D9-673881E2583A}
+	EndGlobalSection
+EndGlobal
