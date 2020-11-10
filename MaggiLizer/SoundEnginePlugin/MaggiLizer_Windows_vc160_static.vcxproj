@@ -769,10 +769,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MaggiLizerFX.h" />
+    <ClInclude Include="MaggiLizerFXDSP.h" />
     <ClInclude Include="MaggiLizerFXParams.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MaggiLizerFX.cpp" />
+    <ClCompile Include="MaggiLizerFXDSP.cpp" />
     <ClCompile Include="MaggiLizerFXParams.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClInclude Include="MaggiLizerFX.h" />
     <ClInclude Include="MaggiLizerFXParams.h" />
+    <ClInclude Include="MaggiLizerFXDSP.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MaggiLizerFX.cpp" />
     <ClCompile Include="MaggiLizerFXParams.cpp" />
+    <ClCompile Include="MaggiLizerFXDSP.cpp" />
   </ItemGroup>
 </Project>

@@ -46,12 +46,7 @@ MaggiLizerFX::MaggiLizerFX() :
     m_pParams(nullptr),
     m_pAllocator(nullptr),
     m_pContext(nullptr),
-    cachedBuffer(nullptr),
-    playbackBuffer(nullptr),
-    sampleRate(0),
-    uBufferSampleSize(0),
-    uCurrentCachedBufferSample(0),
-    uPlaybackSampleHead(0)
+    m_pDSP(nullptr)
 {
 }
 
@@ -65,32 +60,22 @@ AKRESULT MaggiLizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
     m_pAllocator = in_pAllocator;
     m_pContext = in_pContext;
 
-    sampleRate = in_rFormat.uSampleRate;
-    uCurrentCachedBufferSample = 0;
-    CalculateBufferSampleSize(m_pParams);
-
-    int numChannels = in_rFormat.GetNumChannels();
-    cachedBuffer = new AkReal32* [numChannels];
-    playbackBuffer = new AkReal32* [numChannels];
-
-    for (int i = 0; i < numChannels; i++)
-    {
-        cachedBuffer[i] = new AkReal32[2 * sampleRate]; // allow for a max of 2s of buffer
-        playbackBuffer[i] = new AkReal32[4 * sampleRate]; // allow for a max of 2s of buffer played back half speed
-    }
-    
+    m_pDSP = new MaggiLizerFXDSP();
+    m_pDSP->Init(in_rFormat.uSampleRate, m_pParams->RTPC.fSplice, in_rFormat.GetNumChannels());
 
     return AK_Success;
 }
 
 AKRESULT MaggiLizerFX::Term(AK::IAkPluginMemAlloc* in_pAllocator)
 {
+    m_pDSP->Term();
     AK_PLUGIN_DELETE(in_pAllocator, this);
     return AK_Success;
 }
 
 AKRESULT MaggiLizerFX::Reset()
 {
+    m_pDSP->Reset();
     return AK_Success;
 }
 
@@ -104,121 +89,23 @@ AKRESULT MaggiLizerFX::GetPluginInfo(AkPluginInfo& out_rPluginInfo)
 
 void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
 {
-    //Update Buffer Size
-    CalculateBufferSampleSize(m_pParams);
+    const int& numChannels = io_pBuffer->NumChannels();
+    float** io_paBuffer = new float* [numChannels];
 
-    const AkUInt32 uNumChannels = io_pBuffer->NumChannels();
-
-    AkUInt16 uFramesProcessed = 0;
-
-    // Pitch change is just playback speed
-    AkReal32 pitch = m_pParams->RTPC.fPitch;
-    float speed = pow(2, pitch / 1200);
-
-
-    for (AkUInt32 curCh = 0; curCh < uNumChannels; ++curCh)
+    for (int i = 0; i < numChannels; i++)
     {
-        AkReal32* AK_RESTRICT pBuf = (AkReal32 * AK_RESTRICT)io_pBuffer->GetChannel(curCh);
-
-        uFramesProcessed = 0;
-       
-        int localBufferPosition = 0 ;
-        while (uFramesProcessed < io_pBuffer->uValidFrames)
-        {
-            float input = pBuf[uFramesProcessed];
-
-            // if cachedBuffer is full move it to playbackBuffer and clear
-            // TODO: Need to figure out how to have this apply to all channels after trackers have been reset.
-            // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019522
-            if (uCurrentCachedBufferSample + localBufferPosition >= uBufferSampleSize)
-            {
-                ClearBuffer(playbackBuffer[curCh], 4 * sampleRate);
-                ApplySpeedAndReverse(cachedBuffer[curCh], playbackBuffer[curCh], uBufferSampleSize, speed, m_pParams->RTPC.bReverse);
-                ClearBuffer(cachedBuffer[curCh], 2 * sampleRate);
-                uCurrentCachedBufferSample = 0;
-                uPlaybackSampleHead = 0;
-                localBufferPosition = 0;
-            }
-
-            cachedBuffer[curCh][uCurrentCachedBufferSample + localBufferPosition] = input;
-
-            float output = 0;
-            
-            // if the playbackBuffer samples are greater/less than +/-1 they're garbage values, output silence instead.
-            if (playbackBuffer != nullptr && fabs((playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition]))<=1)
-            {
-                output = playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition];
-            }
-
-            // mix generated output with input buffer based on mix value.
-            AkReal32 mixed = (input) * (1 - m_pParams->RTPC.fMix) + output * m_pParams->RTPC.fMix;
-
-            pBuf[uFramesProcessed] = mixed;
-
-            uFramesProcessed++;
-            localBufferPosition++;
-        }
+        io_paBuffer[i] = io_pBuffer->GetChannel(i);
     }
 
-    uPlaybackSampleHead += uFramesProcessed - 1;
-    uCurrentCachedBufferSample += uFramesProcessed - 1;
+    m_pDSP->Execute(io_paBuffer, 
+                   numChannels,
+                   io_pBuffer->uValidFrames,
+                   m_pParams->RTPC.bReverse,
+                   m_pParams->RTPC.fPitch,
+                   m_pParams->RTPC.fSplice,
+                   m_pParams->RTPC.fDelay,
+                   m_pParams->RTPC.fRecycle,
+                   m_pParams->RTPC.fMix);
 }
 
-void SwapArrayValues(AkReal32* a, AkReal32* b)
-{
-    AkReal32 temp = *a;
-    *a = *b;
-    *b = temp;
-}
 
-void ReverseArray(AkReal32* array, int array_size)
-{
-    AkReal32* pointerLeft = array;
-    AkReal32* pointerRight = array + array_size - 1;
-
-    while (pointerLeft < pointerRight) {
-        SwapArrayValues(pointerLeft, pointerRight);
-        pointerLeft++;
-        pointerRight--;
-    }
-}
-
-void MaggiLizerFX::ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer, int bufferSize, float speed, bool b_reverse)
-{
-    float position = 0.0;
-    if (b_reverse)
-    {
-        ReverseArray(inBuffer, bufferSize);
-    }
-    // TODO: If speed is changing the outBuffer size should change as well, and iteration should change
-    // to fill exactly the needed buffer size.
-    // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019952
-    for (int i = 0; i < bufferSize; i++)
-    {
-        if (position >= bufferSize - 1)
-            return;
-
-        int intPos = floor(position);
-        float floatPos = position - intPos;
-
-        AkReal32 prev = inBuffer[intPos];
-        AkReal32 next = inBuffer[intPos + 1];
-
-        outBuffer[i] = (1 - floatPos) * prev + (floatPos * next);
-
-        position += speed;
-    }
-}
-
-void MaggiLizerFX::ClearBuffer(AkReal32* buffer, int bufferSize)
-{
-    for (int i = 0; i < bufferSize; i++)
-    {
-        buffer[i] = 0;
-    }
-}
-
-void MaggiLizerFX::CalculateBufferSampleSize(AK::IAkPluginParam* in_pParams)
-{
-    uBufferSampleSize = m_pParams->RTPC.fSplice / 1000 * sampleRate; // actual buffer based on splice size
-}
