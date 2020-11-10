@@ -46,12 +46,12 @@ MaggiLizerFX::MaggiLizerFX() :
     m_pParams(nullptr),
     m_pAllocator(nullptr),
     m_pContext(nullptr),
-    m_paCachedBuffer(nullptr),
-    m_paPlaybackBuffer(nullptr),
-    m_uSampleRate(0),
-    m_uBufferSampleSize(0),
-    m_uCurrentCachedBufferSample(0),
-    m_uPlaybackSampleHead(0)
+    cachedBuffer(nullptr),
+    playbackBuffer(nullptr),
+    sampleRate(0),
+    uBufferSampleSize(0),
+    uCurrentCachedBufferSample(0),
+    uPlaybackSampleHead(0)
 {
 }
 
@@ -65,18 +65,18 @@ AKRESULT MaggiLizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
     m_pAllocator = in_pAllocator;
     m_pContext = in_pContext;
 
-    m_uSampleRate = in_rFormat.uSampleRate;
-    m_uCurrentCachedBufferSample = 0;
+    sampleRate = in_rFormat.uSampleRate;
+    uCurrentCachedBufferSample = 0;
     CalculateBufferSampleSize(m_pParams);
 
     int numChannels = in_rFormat.GetNumChannels();
-    m_paCachedBuffer = new AkReal32* [numChannels];
-    m_paPlaybackBuffer = new AkReal32* [numChannels];
+    cachedBuffer = new AkReal32* [numChannels];
+    playbackBuffer = new AkReal32* [numChannels];
 
     for (int i = 0; i < numChannels; i++)
     {
-        m_paCachedBuffer[i] = new AkReal32[(double)2 * m_uSampleRate]; // allow for a max of 2s of buffer
-        m_paPlaybackBuffer[i] = new AkReal32[(double)4 * m_uSampleRate]; // allow for a max of 2s of buffer played back half speed
+        cachedBuffer[i] = new AkReal32[2 * sampleRate]; // allow for a max of 2s of buffer
+        playbackBuffer[i] = new AkReal32[4 * sampleRate]; // allow for a max of 2s of buffer played back half speed
     }
     
 
@@ -108,12 +108,12 @@ void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
     CalculateBufferSampleSize(m_pParams);
 
     const AkUInt32 uNumChannels = io_pBuffer->NumChannels();
-    AkUInt16 uFramesProcessed = 0;
-    AkUInt16 localBufferPosition = 0;
 
+    AkUInt16 uFramesProcessed = 0;
+    int localBufferPosition = 0;
     // Pitch change is just playback speed
     AkReal32 pitch = m_pParams->RTPC.fPitch;
-    AkReal32 speed = pow(2, pitch / 1200);
+    float speed = pow(2, pitch / 1200);
 
     AkReal32** AK_RESTRICT pBuf = new AkReal32 * AK_RESTRICT[uNumChannels];
     for (int i = 0; i < uNumChannels; i++)
@@ -126,33 +126,33 @@ void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
         bool cacheFilled = false;
         for (AkUInt32 curCh = 0; curCh < uNumChannels; ++curCh)
         {
-            AkReal32 input = pBuf[curCh][uFramesProcessed];
+            float input = pBuf[curCh][uFramesProcessed];
 
             /// if cachedBuffer is full move it to playbackBuffer and clear
-            if (m_uCurrentCachedBufferSample + localBufferPosition >= m_uBufferSampleSize)
+            if (uCurrentCachedBufferSample + localBufferPosition >= uBufferSampleSize)
             {
                 // use flag to let subsequent channels perform the full buffer tasks.
                 cacheFilled = true;
             }
             if (cacheFilled)
             {
-                ClearBuffer(m_paPlaybackBuffer[curCh], 4 * m_uSampleRate);
-                ApplySpeedAndReverse(m_paCachedBuffer[curCh], m_paPlaybackBuffer[curCh], m_uBufferSampleSize, speed, m_pParams->RTPC.bReverse);
-                ClearBuffer(m_paCachedBuffer[curCh], 2 * m_uSampleRate);
-                m_uCurrentCachedBufferSample = 0;
-                m_uPlaybackSampleHead = 0;
+                ClearBuffer(playbackBuffer[curCh], 4 * sampleRate);
+                ApplySpeedAndReverse(cachedBuffer[curCh], playbackBuffer[curCh], uBufferSampleSize, speed, m_pParams->RTPC.bReverse);
+                ClearBuffer(cachedBuffer[curCh], 2 * sampleRate);
+                uCurrentCachedBufferSample = 0;
+                uPlaybackSampleHead = 0;
                 localBufferPosition = 0;
             }
             /// 
             
-            m_paCachedBuffer[curCh][m_uCurrentCachedBufferSample + localBufferPosition] = input;
+            cachedBuffer[curCh][uCurrentCachedBufferSample + localBufferPosition] = input;
 
-            AkReal32 output = 0; //initialize to zero for early input where playbackBuffer isn't ready.
+            float output = 0; //initialize to zero for early input where playbackBuffer isn't ready.
 
             // if the playbackBuffer samples are greater/less than +/-1 they're garbage values, output silence instead.
-            if (m_paPlaybackBuffer != nullptr && fabs((m_paPlaybackBuffer[curCh][m_uPlaybackSampleHead + localBufferPosition])) <= 1)
+            if (playbackBuffer != nullptr && fabs((playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition])) <= 1)
             {
-                output = m_paPlaybackBuffer[curCh][m_uPlaybackSampleHead + localBufferPosition];
+                output = playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition];
             }
 
             // mix generated output with input buffer based on mix value.
@@ -164,18 +164,18 @@ void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
         localBufferPosition++;
     }
 
-    m_uPlaybackSampleHead += uFramesProcessed - 1;
-    m_uCurrentCachedBufferSample += uFramesProcessed - 1;
+    uPlaybackSampleHead += uFramesProcessed - 1;
+    uCurrentCachedBufferSample += uFramesProcessed - 1;
 }
 
-void MaggiLizerFX::SwapArrayValues(AkReal32* left, AkReal32* right)
+void SwapArrayValues(AkReal32* a, AkReal32* b)
 {
-    AkReal32 temp = *left;
-    *left = *right;
-    *right = temp;
+    AkReal32 temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
-void MaggiLizerFX::ReverseArray(AkReal32* array, AkUInt16 array_size)
+void ReverseArray(AkReal32* array, int array_size)
 {
     AkReal32* pointerLeft = array;
     AkReal32* pointerRight = array + array_size - 1;
@@ -187,7 +187,7 @@ void MaggiLizerFX::ReverseArray(AkReal32* array, AkUInt16 array_size)
     }
 }
 
-void MaggiLizerFX::ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer, AkUInt16 bufferSize, AkReal32 speed, bool b_reverse)
+void MaggiLizerFX::ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer, int bufferSize, float speed, bool b_reverse)
 {
     float position = 0.0;
     if (b_reverse)
@@ -214,7 +214,7 @@ void MaggiLizerFX::ApplySpeedAndReverse(AkReal32* inBuffer, AkReal32* outBuffer,
     }
 }
 
-void MaggiLizerFX::ClearBuffer(AkReal32* buffer, AkUInt16 bufferSize)
+void MaggiLizerFX::ClearBuffer(AkReal32* buffer, int bufferSize)
 {
     for (int i = 0; i < bufferSize; i++)
     {
@@ -224,5 +224,5 @@ void MaggiLizerFX::ClearBuffer(AkReal32* buffer, AkUInt16 bufferSize)
 
 void MaggiLizerFX::CalculateBufferSampleSize(AK::IAkPluginParam* in_pParams)
 {
-    m_uBufferSampleSize = m_pParams->RTPC.fSplice / 1000 * m_uSampleRate; // actual buffer based on splice size
+    uBufferSampleSize = m_pParams->RTPC.fSplice / 1000 * sampleRate; // actual buffer based on splice size
 }
