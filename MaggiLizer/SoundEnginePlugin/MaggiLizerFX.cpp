@@ -110,31 +110,27 @@ void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
     const AkUInt32 uNumChannels = io_pBuffer->NumChannels();
 
     AkUInt16 uFramesProcessed = 0;
-    int localBufferPosition = 0;
+
     // Pitch change is just playback speed
     AkReal32 pitch = m_pParams->RTPC.fPitch;
     float speed = pow(2, pitch / 1200);
 
-    AkReal32** AK_RESTRICT pBuf = new AkReal32 * AK_RESTRICT[uNumChannels];
-    for (int i = 0; i < uNumChannels; i++)
-    {
-        pBuf[i] = (AkReal32 * AK_RESTRICT)io_pBuffer->GetChannel(i);
-    }
 
-    while (uFramesProcessed < io_pBuffer->uValidFrames)
+    for (AkUInt32 curCh = 0; curCh < uNumChannels; ++curCh)
     {
-        bool cacheFilled = false;
-        for (AkUInt32 curCh = 0; curCh < uNumChannels; ++curCh)
+        AkReal32* AK_RESTRICT pBuf = (AkReal32 * AK_RESTRICT)io_pBuffer->GetChannel(curCh);
+
+        uFramesProcessed = 0;
+       
+        int localBufferPosition = 0 ;
+        while (uFramesProcessed < io_pBuffer->uValidFrames)
         {
-            float input = pBuf[curCh][uFramesProcessed];
+            float input = pBuf[uFramesProcessed];
 
-            /// if cachedBuffer is full move it to playbackBuffer and clear
+            // if cachedBuffer is full move it to playbackBuffer and clear
+            // TODO: Need to figure out how to have this apply to all channels after trackers have been reset.
+            // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019522
             if (uCurrentCachedBufferSample + localBufferPosition >= uBufferSampleSize)
-            {
-                // use flag to let subsequent channels perform the full buffer tasks.
-                cacheFilled = true;
-            }
-            if (cacheFilled)
             {
                 ClearBuffer(playbackBuffer[curCh], 4 * sampleRate);
                 ApplySpeedAndReverse(cachedBuffer[curCh], playbackBuffer[curCh], uBufferSampleSize, speed, m_pParams->RTPC.bReverse);
@@ -143,14 +139,13 @@ void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
                 uPlaybackSampleHead = 0;
                 localBufferPosition = 0;
             }
-            /// 
-            
+
             cachedBuffer[curCh][uCurrentCachedBufferSample + localBufferPosition] = input;
 
-            float output = 0; //initialize to zero for early input where playbackBuffer isn't ready.
-
+            float output = 0;
+            
             // if the playbackBuffer samples are greater/less than +/-1 they're garbage values, output silence instead.
-            if (playbackBuffer != nullptr && fabs((playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition])) <= 1)
+            if (playbackBuffer != nullptr && fabs((playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition]))<=1)
             {
                 output = playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition];
             }
@@ -158,10 +153,11 @@ void MaggiLizerFX::Execute(AkAudioBuffer* io_pBuffer)
             // mix generated output with input buffer based on mix value.
             AkReal32 mixed = (input) * (1 - m_pParams->RTPC.fMix) + output * m_pParams->RTPC.fMix;
 
-            pBuf[curCh][uFramesProcessed] = mixed;
+            pBuf[uFramesProcessed] = mixed;
+
+            uFramesProcessed++;
+            localBufferPosition++;
         }
-        uFramesProcessed++;
-        localBufferPosition++;
     }
 
     uPlaybackSampleHead += uFramesProcessed - 1;
