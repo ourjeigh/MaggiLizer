@@ -4,8 +4,8 @@
 class MaggiLizerFXDSP
 {
     typedef unsigned int uint;
-    typedef float** buffer;
-    typedef float* buffer_single;
+    typedef float** buffer; // multichannel buffer
+    typedef float* buffer_single; //single channel buffer
 
 public:
 	MaggiLizerFXDSP();
@@ -41,11 +41,10 @@ public:
     );
 
     void SetBufferValue(buffer io_pBuffer, const uint& in_uChannel, const uint in_uBufferSamplePosition, const float in_fInput);
-    void ClearBuffer(buffer_single buffer, const uint bufferSize);
     void SwapBufferValues(float* a, float* b);
-    void ReverseBuffer(buffer_single array, uint array_size);
-    void ApplyReverse(buffer_single io_pBuffer, uint in_uBufferSize, bool in_bReverse);
-    void ApplySpeed(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed);
+    void ClearBufferSingle(buffer_single buffer, const uint bufferSize);
+    void ApplyReverseBufferSingle(buffer_single io_pBuffer, uint in_uBufferSize, bool in_bReverse);
+    void ApplySpeedBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed);
 
     uint CaclulateBufferSampleSize(const uint& in_uSampleRate, const float& in_fSplice) const;
     uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float in_fSpeed) const;

@@ -32,8 +32,8 @@ void MaggiLizerFXDSP::Init(uint in_uSampleRate, float in_fSplice, uint in_numCha
         uint playbackSize = (double)4 * m_uSampleRate;
         m_pCachedBuffer[i] = new float[cacheSize]; // allow for a max of 2s of buffer
         m_pPlaybackBuffer[i] = new float[playbackSize]; // allow for a max of 2s of buffer played back half speed
-        ClearBuffer(m_pCachedBuffer[i], cacheSize);
-        ClearBuffer(m_pPlaybackBuffer[i], playbackSize);
+        ClearBufferSingle(m_pCachedBuffer[i], cacheSize);
+        ClearBufferSingle(m_pPlaybackBuffer[i], playbackSize);
     }
 }
 
@@ -111,10 +111,10 @@ void MaggiLizerFXDSP::ProcessSingleFrame(
     }
     if (bufferFilled)
     {
-        ClearBuffer(m_pPlaybackBuffer[channel], 4 * m_uSampleRate);
-        ApplyReverse(m_pCachedBuffer[channel], m_uBufferSampleSize, in_bReverse);
-        ApplySpeed(m_pCachedBuffer[channel], m_pPlaybackBuffer[channel], m_uBufferSampleSize, speed);
-        ClearBuffer(m_pCachedBuffer[channel], 2 * m_uSampleRate);
+        ClearBufferSingle(m_pPlaybackBuffer[channel], 4 * m_uSampleRate);
+        ApplyReverseBufferSingle(m_pCachedBuffer[channel], m_uBufferSampleSize, in_bReverse);
+        ApplySpeedBufferSingle(m_pCachedBuffer[channel], m_pPlaybackBuffer[channel], m_uBufferSampleSize, speed);
+        ClearBufferSingle(m_pCachedBuffer[channel], 2 * m_uSampleRate);
     }
 
     SetBufferValue(m_pCachedBuffer, channel, m_uCurrentCachedBufferSample, input);
@@ -142,8 +142,10 @@ void MaggiLizerFXDSP::SwapBufferValues(float* a, float* b)
     *b = temp;
 }
 
-void MaggiLizerFXDSP::ReverseBuffer(buffer_single io_pBuffer, uint in_uBufferSize)
+void MaggiLizerFXDSP::ApplyReverseBufferSingle(buffer_single io_pBuffer, uint in_uBufferSize, bool in_bReverse)
 {
+    if (!in_bReverse) return;
+
     float* pointerLeft = io_pBuffer;
     float* pointerRight = io_pBuffer + in_uBufferSize - 1;
 
@@ -155,21 +157,13 @@ void MaggiLizerFXDSP::ReverseBuffer(buffer_single io_pBuffer, uint in_uBufferSiz
     }
 }
 
-void MaggiLizerFXDSP::ApplyReverse(buffer_single io_pBuffer, uint in_uBufferSize, bool in_bReverse)
-{
-    if (in_bReverse)
-    {
-        ReverseBuffer(io_pBuffer, in_uBufferSize);
-    }
-}
-
 /// <summary>
 /// - Resize the output buffer length if speed isn't 1.
 /// - Iterate input buffer
 /// - Interpolate values due to speed change
 /// - Copy interpolated value to output buffer.
 /// </summary>
-void MaggiLizerFXDSP::ApplySpeed(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed)
+void MaggiLizerFXDSP::ApplySpeedBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed)
 {
     uint uOutBufferSize = CalculateBufferSizeChangeFromSpeed(in_uBufferSize, in_fSpeed);
 
@@ -200,7 +194,7 @@ void MaggiLizerFXDSP::ApplySpeed(buffer_single in_pBuffer, buffer_single out_pBu
 /// Instead of creating new arrays, just zero them out to prevent garbage values from being outputed. 
 /// 0's will just be silence.
 /// </summary>
-void MaggiLizerFXDSP::ClearBuffer(buffer_single buffer, const uint bufferSize)
+void MaggiLizerFXDSP::ClearBufferSingle(buffer_single buffer, const uint bufferSize)
 {
     for (uint i = 0; i < bufferSize; i++)
     {
