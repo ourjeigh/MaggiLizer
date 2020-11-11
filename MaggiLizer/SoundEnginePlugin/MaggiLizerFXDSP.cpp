@@ -64,7 +64,6 @@ void MaggiLizerFXDSP::Execute(
     float speed = CalculateSpeed(in_fPitch);
 
     unsigned int uFramesProcessed = 0;
-    int localBufferPosition = 0;
     bool bufferFilled = false;
 
     // per frame loop
@@ -80,18 +79,15 @@ void MaggiLizerFXDSP::Execute(
                 m_pPlaybackBuffer, 
                 channel, 
                 uFramesProcessed, 
-                localBufferPosition, 
                 bufferFilled, 
                 speed, 
                 in_bReverse, 
                 in_fMix);
         }
         uFramesProcessed++;
-        localBufferPosition++;
+        m_uCurrentCachedBufferSample++;
+        m_uPlaybackSampleHead++;
     }
-
-    m_uPlaybackSampleHead += uFramesProcessed - 1;
-    m_uCurrentCachedBufferSample += uFramesProcessed - 1;
 }
 
 void MaggiLizerFXDSP::ProcessSingleFrame(float** io_paBuffer,
@@ -99,7 +95,6 @@ void MaggiLizerFXDSP::ProcessSingleFrame(float** io_paBuffer,
     float** in_pPlaybackBuffer,
     const int channel,
     const unsigned int uFramesProcessed,
-    int& localBufferPosition, 
     bool& bufferFilled, 
     const float speed,
     const bool in_bReverse,
@@ -109,12 +104,11 @@ void MaggiLizerFXDSP::ProcessSingleFrame(float** io_paBuffer,
 
     // handle multiple channels by setting a flag that the buffer is filled
     // in channel 0, signaling to copy buffers and clear for all subsequent channels.
-    if (m_uCurrentCachedBufferSample + localBufferPosition >= m_uBufferSampleSize)
+    if (m_uCurrentCachedBufferSample >= m_uBufferSampleSize)
     {
         bufferFilled = true;
         m_uCurrentCachedBufferSample = 0;
         m_uPlaybackSampleHead = 0;
-        localBufferPosition = 0;
     }
     if (bufferFilled)
     {
@@ -123,18 +117,18 @@ void MaggiLizerFXDSP::ProcessSingleFrame(float** io_paBuffer,
         ClearBuffer(m_pCachedBuffer[channel], 2 * m_uSampleRate);
     }
 
-    m_pCachedBuffer[channel][m_uCurrentCachedBufferSample + localBufferPosition] = input;
+    m_pCachedBuffer[channel][m_uCurrentCachedBufferSample] = input;
 
-    float output = CalculateOutput(m_pPlaybackBuffer, channel, localBufferPosition);
+    float output = CalculateOutput(m_pPlaybackBuffer, channel, m_uPlaybackSampleHead);
 
     float mixed = MixInputWithOutput(input, output, in_fMix);
 
     io_paBuffer[channel][uFramesProcessed] = mixed;
 }
 
-float MaggiLizerFXDSP::CalculateOutput(float**in_pPlaybackBuffer, const int& in_channel, int& in_localBufferPosition)
+float MaggiLizerFXDSP::CalculateOutput(float**in_pPlaybackBuffer, const int& in_channel, unsigned int& in_uPlaybackBufferHead)
 {
-    return in_pPlaybackBuffer[in_channel][m_uPlaybackSampleHead + in_localBufferPosition];
+    return in_pPlaybackBuffer[in_channel][in_uPlaybackBufferHead];
 }
 
 /// <summary>

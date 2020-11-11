@@ -24,13 +24,12 @@ public:
         float** in_pPlaybackBuffer, 
         const int channel,
         const unsigned int uFramesProcessed,
-        int& localBufferPosition, 
         bool& bufferFilled, 
         const float speed,
         const bool in_bReverse,
         const float in_fMix);
 
-    float CalculateOutput(float** in_pPlaybackBuffer, const int& channel, int& localBufferPosition);
+    float CalculateOutput(float** in_pPlaybackBuffer, const int& channel, unsigned int& in_playbackBufferHead);
 
     float MixInputWithOutput(const float in_fInput, const float in_fOutput, const float in_fMix);
     float CalculateSpeed(float in_fPitch) const;
