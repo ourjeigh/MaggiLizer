@@ -125,15 +125,20 @@ void ReverseArray(float* array, int array_size)
 
 void MaggiLizerFXDSP::ApplySpeedAndReverse(float* inBuffer, float* outBuffer, int bufferSize, float speed, bool b_reverse)
 {
-    float position = 0.0;
     if (b_reverse)
     {
         ReverseArray(inBuffer, bufferSize);
     }
-    // TODO: If speed is changing the outBuffer size should change as well, and iteration should change
-    // to fill exactly the needed buffer size.
-    // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019952
-    for (int i = 0; i < bufferSize; i++)
+    
+    // scale the output buffer size to adjust for more/less samples due to speed
+    int outBufferSize = bufferSize;
+    if (speed != 1)
+    {
+        bufferSize = floor((float)outBufferSize / speed);
+    }
+
+    float position = 0.0;
+    for (int i = 0; i < outBufferSize; i++)
     {
         if (position >= bufferSize - 1)
             return;
