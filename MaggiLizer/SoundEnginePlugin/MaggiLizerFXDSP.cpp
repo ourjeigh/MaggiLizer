@@ -15,7 +15,7 @@ MaggiLizerFXDSP::~MaggiLizerFXDSP()
 {
 }
 
-void MaggiLizerFXDSP::Init(int in_uSampleRate, float in_fSplice, int in_numChannels)
+void MaggiLizerFXDSP::Init(uint in_uSampleRate, float in_fSplice, uint in_numChannels)
 {
     m_uSampleRate = in_uSampleRate;
     m_uCurrentCachedBufferSample = 0;
@@ -26,10 +26,10 @@ void MaggiLizerFXDSP::Init(int in_uSampleRate, float in_fSplice, int in_numChann
     m_pCachedBuffer = new float* [in_numChannels];
     m_pPlaybackBuffer = new float* [in_numChannels];
 
-    for (int i = 0; i < in_numChannels; i++)
+    for (uint i = 0; i < in_numChannels; i++)
     {
-        int cacheSize = (double)2 * m_uSampleRate;
-        int playbackSize = (double)4 * m_uSampleRate;
+        uint cacheSize = (double)2 * m_uSampleRate;
+        uint playbackSize = (double)4 * m_uSampleRate;
         m_pCachedBuffer[i] = new float[cacheSize]; // allow for a max of 2s of buffer
         m_pPlaybackBuffer[i] = new float[playbackSize]; // allow for a max of 2s of buffer played back half speed
         ClearBuffer(m_pCachedBuffer[i], cacheSize);
@@ -47,8 +47,8 @@ void MaggiLizerFXDSP::Reset()
 
 void MaggiLizerFXDSP::Execute(
     float** io_pBuffer,
-    const int in_uNumChannels,
-    const int in_uValidFrames,
+    const uint in_uNumChannels,
+    const uint in_uValidFrames,
     const bool in_bReverse,
     const float in_fPitch,
     const float in_fSplice,
@@ -62,7 +62,7 @@ void MaggiLizerFXDSP::Execute(
     // Pitch change is just playback speed
     float speed = CalculateSpeed(in_fPitch);
 
-    unsigned int uFramesProcessed = 0;
+    uint uFramesProcessed = 0;
     bool bufferFilled = false;
 
     // per frame loop
@@ -70,7 +70,7 @@ void MaggiLizerFXDSP::Execute(
     {
         bufferFilled = false;
         // per channel loop
-        for (int channel = 0; channel < in_uNumChannels; ++channel)
+        for (uint channel = 0; channel < in_uNumChannels; ++channel)
         {
             ProcessSingleFrame(
                 io_pBuffer, 
@@ -93,8 +93,8 @@ void MaggiLizerFXDSP::ProcessSingleFrame(
     float** io_pBuffer,
     float** in_pCachedBuffer,
     float** in_pPlaybackBuffer,
-    const int channel,
-    const unsigned int uFramesProcessed,
+    const uint channel,
+    const uint uFramesProcessed,
     bool& bufferFilled, 
     const float speed,
     const bool in_bReverse,
@@ -113,25 +113,25 @@ void MaggiLizerFXDSP::ProcessSingleFrame(
     if (bufferFilled)
     {
         ClearBuffer(m_pPlaybackBuffer[channel], 4 * m_uSampleRate);
-        ApplySpeedAndReverse(m_pCachedBuffer[channel], m_pPlaybackBuffer[channel], m_uBufferSampleSize, speed, in_bReverse);
+        ApplyReverse(m_pCachedBuffer[channel], m_uBufferSampleSize, in_bReverse);
+        ApplySpeed(m_pCachedBuffer[channel], m_pPlaybackBuffer[channel], m_uBufferSampleSize, speed);
         ClearBuffer(m_pCachedBuffer[channel], 2 * m_uSampleRate);
     }
 
     SetBufferValue(m_pCachedBuffer, channel, m_uCurrentCachedBufferSample, input);
 
     const float output = GetBufferValue(m_pPlaybackBuffer, channel, m_uPlaybackSampleHead);
-
     const float mixed = MixInputWithOutput(input, output, in_fMix);
 
     SetBufferValue(io_pBuffer, channel, uFramesProcessed, mixed);
 }
 
-void MaggiLizerFXDSP::SetBufferValue(float** io_pBuffer, const int& in_uChannel, const unsigned int in_uBufferSamplePosition,  const float in_fInput)
+void MaggiLizerFXDSP::SetBufferValue(float** io_pBuffer, const uint& in_uChannel, const uint in_uBufferSamplePosition,  const float in_fInput)
 {
     io_pBuffer[in_uChannel][in_uBufferSamplePosition] = in_fInput;
 }
 
-float MaggiLizerFXDSP::GetBufferValue(float** in_pBuffer, const int& in_channel, const unsigned int& in_uBufferPosition)
+float MaggiLizerFXDSP::GetBufferValue(float** in_pBuffer, const uint& in_channel, const uint& in_uBufferPosition)
 {
     return in_pBuffer[in_channel][in_uBufferPosition];
 }
@@ -144,60 +144,64 @@ float MaggiLizerFXDSP::MixInputWithOutput(const float in_fInput, const float in_
     return (in_fInput) * (1 - in_fMix) + in_fOutput * in_fMix;
 }
 
-void SwapArrayValues(float* a, float* b)
+void MaggiLizerFXDSP::SwapBufferValues(float* a, float* b)
 {
     float temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void ReverseArray(float* array, int array_size)
+void MaggiLizerFXDSP::ReverseBuffer(float* io_pBuffer, uint in_uBufferSize)
 {
-    float* pointerLeft = array;
-    float* pointerRight = array + array_size - 1;
+    float* pointerLeft = io_pBuffer;
+    float* pointerRight = io_pBuffer + in_uBufferSize - 1;
 
     while (pointerLeft < pointerRight) {
-        SwapArrayValues(pointerLeft, pointerRight);
+        SwapBufferValues(pointerLeft, pointerRight);
         pointerLeft++;
         pointerRight--;
     }
 }
 
-void MaggiLizerFXDSP::ApplySpeedAndReverse(float* inBuffer, float* outBuffer, int bufferSize, float speed, bool b_reverse)
+void MaggiLizerFXDSP::ApplyReverse(float* io_pBuffer, uint in_uBufferSize, bool in_bReverse)
 {
-    if (b_reverse)
+    if (in_bReverse)
     {
-        ReverseArray(inBuffer, bufferSize);
+        ReverseBuffer(io_pBuffer, in_uBufferSize);
     }
-    
+}
+
+
+void MaggiLizerFXDSP::ApplySpeed(float* in_pBuffer, float* out_pBuffer, uint in_uBufferSize, float speed)
+{
     // scale the output buffer size to adjust for more/less samples due to speed
-    int outBufferSize = bufferSize;
+    uint outBufferSize = in_uBufferSize;
     if (speed != 1)
     {
-        bufferSize = floor((float)outBufferSize / speed);
+        in_uBufferSize = floor((float)outBufferSize / speed);
     }
 
     float position = 0.0;
-    for (int i = 0; i < outBufferSize; i++)
+    for (uint i = 0; i < outBufferSize; i++)
     {
-        if (position >= bufferSize - 1)
+        if (position >= in_uBufferSize - 1)
             return;
 
-        int intPos = floor(position);
+        uint intPos = floor(position);
         float floatPos = position - intPos;
 
-        float prev = inBuffer[intPos];
-        float next = inBuffer[intPos + 1];
+        float prev = in_pBuffer[intPos];
+        float next = in_pBuffer[intPos + 1];
 
-        outBuffer[i] = (1 - floatPos) * prev + (floatPos * next);
+        out_pBuffer[i] = (1 - floatPos) * prev + (floatPos * next);
 
         position += speed;
     }
 }
 
-void MaggiLizerFXDSP::ClearBuffer(float* buffer, int bufferSize)
+void MaggiLizerFXDSP::ClearBuffer(float* buffer, uint bufferSize)
 {
-    for (int i = 0; i < bufferSize; i++)
+    for (uint i = 0; i < bufferSize; i++)
     {
         buffer[i] = 0;
     }
