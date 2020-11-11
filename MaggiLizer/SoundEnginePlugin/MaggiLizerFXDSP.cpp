@@ -100,7 +100,7 @@ void MaggiLizerFXDSP::ProcessSingleFrame(float** io_paBuffer,
     const bool in_bReverse,
     const float in_fMix)
 {
-    float input = io_paBuffer[channel][uFramesProcessed];
+    float input = GetBufferValue(io_paBuffer, channel, uFramesProcessed);
 
     // handle multiple channels by setting a flag that the buffer is filled
     // in channel 0, signaling to copy buffers and clear for all subsequent channels.
@@ -119,16 +119,16 @@ void MaggiLizerFXDSP::ProcessSingleFrame(float** io_paBuffer,
 
     m_pCachedBuffer[channel][m_uCurrentCachedBufferSample] = input;
 
-    float output = CalculateOutput(m_pPlaybackBuffer, channel, m_uPlaybackSampleHead);
+    const float output = GetBufferValue(m_pPlaybackBuffer, channel, m_uPlaybackSampleHead);
 
-    float mixed = MixInputWithOutput(input, output, in_fMix);
+    const float mixed = MixInputWithOutput(input, output, in_fMix);
 
     io_paBuffer[channel][uFramesProcessed] = mixed;
 }
 
-float MaggiLizerFXDSP::CalculateOutput(float**in_pPlaybackBuffer, const int& in_channel, unsigned int& in_uPlaybackBufferHead)
+float MaggiLizerFXDSP::GetBufferValue(float**in_pBuffer, const int& in_channel, const unsigned int& in_uBufferPosition)
 {
-    return in_pPlaybackBuffer[in_channel][in_uPlaybackBufferHead];
+    return in_pBuffer[in_channel][in_uBufferPosition];
 }
 
 /// <summary>

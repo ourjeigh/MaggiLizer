@@ -29,7 +29,7 @@ public:
         const bool in_bReverse,
         const float in_fMix);
 
-    float CalculateOutput(float** in_pPlaybackBuffer, const int& channel, unsigned int& in_playbackBufferHead);
+    float GetBufferValue(float** in_pPlaybackBuffer, const int& channel, const unsigned int& in_playbackBufferHead);
 
     float MixInputWithOutput(const float in_fInput, const float in_fOutput, const float in_fMix);
     float CalculateSpeed(float in_fPitch) const;
