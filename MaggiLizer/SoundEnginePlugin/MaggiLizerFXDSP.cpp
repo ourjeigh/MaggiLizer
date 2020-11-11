@@ -52,52 +52,55 @@ void MaggiLizerFXDSP::Execute(float** io_paBuffer,
     //Update Buffer Size
     CaclulateBufferSampleSize(in_fSplice);
 
-    unsigned int uFramesProcessed = 0;
 
     // Pitch change is just playback speed
     float speed = pow(2, in_fPitch / 1200);
 
+    unsigned int uFramesProcessed = 0;
+    int localBufferPosition = 0;
+    bool bufferFilled = false;
 
-    for (int curCh = 0; curCh < in_uNumChannels; ++curCh)
+    while (uFramesProcessed < in_uValidFrames)
     {
-        uFramesProcessed = 0;
-
-        int localBufferPosition = 0;
-        while (uFramesProcessed < in_uValidFrames)
+        bufferFilled = false;
+        for (int channel = 0; channel < in_uNumChannels; ++channel)
         {
-            float input = io_paBuffer[curCh][uFramesProcessed];
 
-            // if cachedBuffer is full move it to playbackBuffer and clear
-            // TODO: Need to figure out how to have this apply to all channels after trackers have been reset.
-            // -- issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49019522
+            float input = io_paBuffer[channel][uFramesProcessed];
+
+            // handle multiple channels by setting a flag that the buffer is filled
+            // in channel 0, signaling to copy buffers and clear for all subsequent channels.
             if (uCurrentCachedBufferSample + localBufferPosition >= uBufferSampleSize)
             {
-                ClearBuffer(playbackBuffer[curCh], 4 * sampleRate);
-                ApplySpeedAndReverse(cachedBuffer[curCh], playbackBuffer[curCh], uBufferSampleSize, speed, in_bReverse);
-                ClearBuffer(cachedBuffer[curCh], 2 * sampleRate);
+                bufferFilled = true;
                 uCurrentCachedBufferSample = 0;
                 uPlaybackSampleHead = 0;
                 localBufferPosition = 0;
             }
+            if (bufferFilled)
+            {
+                ClearBuffer(playbackBuffer[channel], 4 * sampleRate);
+                ApplySpeedAndReverse(cachedBuffer[channel], playbackBuffer[channel], uBufferSampleSize, speed, in_bReverse);
+                ClearBuffer(cachedBuffer[channel], 2 * sampleRate);
+            }
 
-            cachedBuffer[curCh][uCurrentCachedBufferSample + localBufferPosition] = input;
+            cachedBuffer[channel][uCurrentCachedBufferSample + localBufferPosition] = input;
 
             float output = 0;
 
             // if the playbackBuffer samples are greater/less than +/-1 they're garbage values, output silence instead.
-            if (playbackBuffer != nullptr && fabs((playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition])) <= 1)
+            if (playbackBuffer != nullptr && fabs((playbackBuffer[channel][uPlaybackSampleHead + localBufferPosition])) <= 1)
             {
-                output = playbackBuffer[curCh][uPlaybackSampleHead + localBufferPosition];
+                output = playbackBuffer[channel][uPlaybackSampleHead + localBufferPosition];
             }
 
             // mix generated output with input buffer based on mix value.
             float mixed = (input) * (1 - in_fMix) + output * in_fMix;
 
-            io_paBuffer[curCh][uFramesProcessed] = mixed;
-
-            uFramesProcessed++;
-            localBufferPosition++;
+            io_paBuffer[channel][uFramesProcessed] = mixed;
         }
+        uFramesProcessed++;
+        localBufferPosition++;
     }
 
     uPlaybackSampleHead += uFramesProcessed - 1;
