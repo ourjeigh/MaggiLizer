@@ -8,7 +8,7 @@ public:
 	void Term();
 	void Reset();
     void Execute(
-        float** io_paBuffer,
+        float** io_pBuffer,
         const int in_uNumChannels,
         const int in_uValidFrames,
         const bool reverse,
@@ -19,7 +19,7 @@ public:
         const float mix);
 
     void ProcessSingleFrame(
-        float** io_paBuffer, 
+        float** io_pBuffer, 
         float** in_pCachedBuffer,
         float** in_pPlaybackBuffer, 
         const int channel,
@@ -29,7 +29,9 @@ public:
         const bool in_bReverse,
         const float in_fMix);
 
-    float GetBufferValue(float** in_pPlaybackBuffer, const int& channel, const unsigned int& in_playbackBufferHead);
+    void SetBufferValue(float** io_pBuffer, const int& in_uChannel, const unsigned int in_uBufferSamplePosition, const float in_fInput);
+
+    float GetBufferValue(float** in_pBuffer, const int& channel, const unsigned int& in_uBufferPosition);
 
     float MixInputWithOutput(const float in_fInput, const float in_fOutput, const float in_fMix);
     float CalculateSpeed(float in_fPitch) const;
