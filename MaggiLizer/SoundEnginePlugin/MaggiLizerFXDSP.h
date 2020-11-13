@@ -19,12 +19,12 @@ public:
         buffer io_pBuffer,
         const uint in_uNumChannels,
         const uint in_uValidFrames,
-        const bool reverse,
-        const float pitch,
-        const float splice,
-        const float delay,
-        const float recycle,
-        const float mix
+        const bool& reverse,
+        const float& pitch,
+        const float& splice,
+        const float& delay,
+        const float& recycle,
+        const float& mix
     );
 
     void ProcessSingleFrame
@@ -40,18 +40,19 @@ public:
         bool& bufferFilled
     );
 
-    void SetBufferValue(buffer io_pBuffer, const uint& in_uChannel, const uint in_uBufferSamplePosition, const float in_fInput);
+    void SetBufferValue(buffer io_pBuffer, const uint& in_uChannel, const uint& in_uBufferSamplePosition, const float& in_fInput);
     void SwapBufferValues(float* a, float* b);
-    void ClearBufferSingle(buffer_single buffer, const uint bufferSize);
-    void ApplyReverseBufferSingle(buffer_single io_pBuffer, uint in_uBufferSize, bool in_bReverse);
+    void ClearBufferSingle(buffer_single buffer, const uint& bufferSize);
+    void ApplyReverseBufferSingle(buffer_single io_pBuffer, const uint& in_uBufferSize, const bool& in_bReverse);
     void ApplySpeedBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed);
+    //void ApplyRecycleBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fRecycle);
 
     uint CaclulateBufferSampleSize(const uint& in_uSampleRate, const float& in_fSplice) const;
-    uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float in_fSpeed) const;
+    uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed) const;
 
     float GetBufferValue(buffer in_pBuffer, const uint& channel, const uint& in_uBufferPosition) const;
-    float CalculateWetDryMix(const float in_fDry, const float in_fWet, const float in_fMix) const;
-    float CalculateSpeed(float in_fPitch) const;
+    float CalculateWetDryMix(const float& in_fDry, const float& in_fWet, const float in_fMix) const;
+    float CalculateSpeed(const float& in_fPitch) const;
 
 private:
     uint m_uSampleRate;

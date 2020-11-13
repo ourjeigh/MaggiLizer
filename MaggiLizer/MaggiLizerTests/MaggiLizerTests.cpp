@@ -45,7 +45,6 @@ namespace MaggiLizerTests
 			for (uint i = 0; i < channels; i++)
 			{
 				pBuffer[i] = FillBufferSingleWithData(pattern, patternSize, repeats);
-				//FillBufferSingleWithData(pBuffer[i], pattern, patternSize, repeats);
 			}
 			return pBuffer;
 		}
