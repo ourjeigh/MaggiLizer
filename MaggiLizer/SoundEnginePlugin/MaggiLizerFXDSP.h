@@ -36,16 +36,19 @@ public:
         const uint& uFramesProcessed,
         const float& speed,
         const bool& in_bReverse,
+        const float& in_fRecycle,
         const float& in_fMix,
         bool& bufferFilled
     );
 
+
     void SetBufferValue(buffer io_pBuffer, const uint& in_uChannel, const uint& in_uBufferSamplePosition, const float& in_fInput);
     void SwapBufferValues(float* a, float* b);
     void ClearBufferSingle(buffer_single buffer, const uint& bufferSize);
+    void CopyBufferSingleValues(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize);
     void ApplyReverseBufferSingle(buffer_single io_pBuffer, const uint& in_uBufferSize, const bool& in_bReverse);
     void ApplySpeedBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed);
-    //void ApplyRecycleBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fRecycle);
+    void ApplyRecycleBufferValue(buffer io_pBuffer, const uint& channel, const uint& samplePosition, const float& input, const float& in_fRecycle);
 
     uint CaclulateBufferSampleSize(const uint& in_uSampleRate, const float& in_fSplice) const;
     uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed) const;
@@ -56,6 +59,7 @@ public:
 
 private:
     uint m_uSampleRate;
+    uint m_uMaxBufferSize;
     uint m_uBufferSampleSize;
     uint m_uCurrentCachedBufferSample;
     uint m_uPlaybackSampleHead;

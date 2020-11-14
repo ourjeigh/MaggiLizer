@@ -239,6 +239,30 @@ namespace MaggiLizerTests
 			AssertBufferSingleValues(expected, out_pBuffer, bufferSize);
 		}
 
+		TEST_METHOD(Method_ApplyRecycleBufferValue)
+		{
+			float pattern[] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
+			float expected = 0.45;
+
+			//SETUP
+			float input = 0.2;
+			float recycle = 0.5;
+			uint channel = 0;
+			uint channelCount = 1;
+			uint samplePosition = 5;
+			uint bufferSize = 10;
+
+			MaggiLizerFXDSP* dsp = new MaggiLizerFXDSP;
+
+			buffer pBuffer = FillBufferWithData(channelCount, pattern, bufferSize);
+
+			//TEST
+			dsp->ApplyRecycleBufferValue(pBuffer, channel, samplePosition, input, recycle);
+
+			//VALIDATE
+			Assert::AreEqual(expected, pBuffer[channel][samplePosition]);
+		}
+
 		TEST_METHOD(Method_CaclulateBufferSampleSize)
 		{
 			uint expected = 76800;
