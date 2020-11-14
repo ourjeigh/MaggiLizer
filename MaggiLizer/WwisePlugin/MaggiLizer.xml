@@ -83,7 +83,7 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="Recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle  (Not Working)">
+			<Property Name="Recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
 				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>4</AudioEnginePropertyID>
