@@ -1,5 +1,7 @@
 # MaggiLizer
 Crystallizer knockoff Wwise Plugin
+AKA
+The Secret Sauce for making all your sound taste better.
 
 
 ## Download The Libraries
