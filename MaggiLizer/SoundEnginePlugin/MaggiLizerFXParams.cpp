@@ -115,8 +115,6 @@ AKRESULT MaggiLizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
         RTPC.fSplice = *(AkReal32*)(in_pValue);
         m_paramChangeHandler.SetParamChange(PARAM_SPLICE_ID);
         break;
-    // TODO: Implement Recycyle
-    // -- issue https://github.com/rjmattingly/MaggiLizer/projects/1#card-49020926
     case PARAM_RECYCLE_ID:
         RTPC.fRecycle = *(AkReal32*)(in_pValue) / 100; //convert from 0-100% to 0-1
         m_paramChangeHandler.SetParamChange(PARAM_RECYCLE_ID);

@@ -49,6 +49,7 @@ public:
     void ApplyReverseBufferSingle(buffer_single io_pBuffer, const uint& in_uBufferSize, const bool& in_bReverse);
     void ApplySpeedBufferSingle(buffer_single in_pBuffer, buffer_single out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed);
     void ApplyRecycleBufferValue(buffer io_pBuffer, const uint& channel, const uint& samplePosition, const float& input, const float& in_fRecycle);
+    void ApplySmoothBufferSingle(buffer_single io_pBuffer, const float& in_fStartValue, const uint& in_uSmoothWindowSize);
 
     uint CaclulateBufferSampleSize(const uint& in_uSampleRate, const float& in_fSplice) const;
     uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed) const;
@@ -65,5 +66,6 @@ private:
     uint m_uPlaybackSampleHead;
     buffer m_pCachedBuffer;
     buffer m_pPlaybackBuffer;
+    static const uint m_cSmoothWindowSize = 30;
 };
 

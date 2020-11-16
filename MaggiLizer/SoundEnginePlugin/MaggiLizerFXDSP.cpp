@@ -113,19 +113,23 @@ void MaggiLizerFXDSP::ProcessSingleFrame(
     }
     if (bufferFilled)
     {
+        const float lastCachedValue = GetBufferValue(m_pCachedBuffer,channel, m_uBufferSampleSize);
         ClearBufferSingle(m_pPlaybackBuffer[channel], m_uMaxBufferSize);
         ApplyReverseBufferSingle(m_pCachedBuffer[channel], m_uBufferSampleSize, in_bReverse);
         ApplySpeedBufferSingle(m_pCachedBuffer[channel], m_pPlaybackBuffer[channel], m_uBufferSampleSize, speed);
+        ApplySmoothBufferSingle(m_pPlaybackBuffer[channel], lastCachedValue, m_cSmoothWindowSize);
         // Copy playbackBuffer back into cachedBuffer after all the modification is done so that it can be recycled with new input
         CopyBufferSingleValues(m_pPlaybackBuffer[channel], m_pCachedBuffer[channel], m_uMaxBufferSize);
     }
-
-
     
     ApplyRecycleBufferValue(m_pCachedBuffer, channel, m_uCurrentCachedBufferSample, input, in_fRecycle);
 
     const float output = GetBufferValue(m_pPlaybackBuffer, channel, m_uPlaybackSampleHead);
     const float mixed = CalculateWetDryMix(input, output, in_fMix);
+
+    //TODO: Check for instantaneous pops based on the new mixed value being "drastically" 
+    // different from this channel's last frame value.
+    // - issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49461406
 
     SetBufferValue(io_pBuffer, channel, uFramesProcessed, mixed);
 }
@@ -146,11 +150,20 @@ void MaggiLizerFXDSP::ApplyRecycleBufferValue(buffer io_pBuffer, const uint& cha
     );
 }
 
+void MaggiLizerFXDSP::ApplySmoothBufferSingle(buffer_single io_pBuffer, const float& in_fStartValue, const uint& in_uSmoothWindowSize)
+{
+    for (uint i = 0; i < in_uSmoothWindowSize; i++)
+    {
+        const float weight = 1.0 - ((float)i/(float)in_uSmoothWindowSize);
+        const float smoothedValue = CalculateWetDryMix(io_pBuffer[i], in_fStartValue, weight);
+        io_pBuffer[i] = smoothedValue;
+    }
+}
+
 void MaggiLizerFXDSP::SetBufferValue(buffer io_pBuffer, const uint& in_uChannel, const uint& in_uBufferSamplePosition, const float& in_fInput)
 {
     io_pBuffer[in_uChannel][in_uBufferSamplePosition] = in_fInput;
 }
-
 
 float MaggiLizerFXDSP::GetBufferValue(buffer in_pBuffer, const uint& in_channel, const uint& in_uBufferPosition) const
 {

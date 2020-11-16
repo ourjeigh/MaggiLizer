@@ -263,6 +263,25 @@ namespace MaggiLizerTests
 			Assert::AreEqual(expected, pBuffer[channel][samplePosition]);
 		}
 
+		TEST_METHOD(Method_ApplySmoothBufferSingle)
+		{
+			float input[] = { 0,0,0,0,0,0,0,0,0,0 };
+			float expected[] = { 1, 0.8, 0.6, 0.4, 0.2, 0, 0, 0, 0, 0 };
+			float startValue = 1.0;
+			uint bufferSize = 10;
+			uint smoothWindow = 5;
+
+			MaggiLizerFXDSP* dsp = new MaggiLizerFXDSP;
+
+			buffer_single pBuffer = FillBufferSingleWithData(input, bufferSize);
+
+			//TEST
+			dsp->ApplySmoothBufferSingle(pBuffer, startValue, smoothWindow);
+
+			//VALIDATE
+			AssertBufferSingleValues(expected, pBuffer, bufferSize);
+		}
+
 		TEST_METHOD(Method_CaclulateBufferSampleSize)
 		{
 			uint expected = 76800;
