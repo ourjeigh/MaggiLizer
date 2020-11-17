@@ -51,7 +51,7 @@ public:
     void ApplyRecycleBufferValue(buffer io_pBuffer, const uint& channel, const uint& samplePosition, const float& input, const float& in_fRecycle);
     void ApplySmoothBufferSingle(buffer_single io_pBuffer, const float& in_fStartValue, const uint& in_uSmoothWindowSize);
 
-    uint CaclulateBufferSampleSize(const uint& in_uSampleRate, const float& in_fSplice) const;
+    uint ConvertMillisecondsToSamples(const uint& in_uSampleRate, const float& in_fMilliseconds) const;
     uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed) const;
 
     float GetBufferValue(buffer in_pBuffer, const uint& channel, const uint& in_uBufferPosition) const;

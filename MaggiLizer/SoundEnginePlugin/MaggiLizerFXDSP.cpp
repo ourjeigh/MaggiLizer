@@ -23,7 +23,7 @@ void MaggiLizerFXDSP::Init(uint in_uSampleRate, float in_fSplice, uint in_numCha
     m_uCurrentCachedBufferSample = 0;
     m_uPlaybackSampleHead = 0;
 
-    m_uBufferSampleSize = CaclulateBufferSampleSize(m_uSampleRate, in_fSplice);
+    m_uBufferSampleSize = ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
 
     m_pCachedBuffer = new float* [in_numChannels];
     m_pPlaybackBuffer = new float* [in_numChannels];
@@ -57,7 +57,7 @@ void MaggiLizerFXDSP::Execute(
     const float& in_fMix)
 {
     //Update Buffer Size
-    m_uBufferSampleSize = CaclulateBufferSampleSize(m_uSampleRate, in_fSplice);
+    m_uBufferSampleSize = ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
 
     float fSpeed = CalculateSpeed(in_fPitch);
 
@@ -251,18 +251,16 @@ void MaggiLizerFXDSP::CopyBufferSingleValues(buffer_single in_pBuffer, buffer_si
 /// </summary>
 unsigned int MaggiLizerFXDSP::CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed) const
 {
-    if (in_fSpeed == 1) return in_uBufferSize;
-    
     return floor((float)in_uBufferSize / in_fSpeed);
 }
 
 /// <summary>
 /// Actual buffer size for iteration is based on splice value
 /// </summary>
-unsigned int MaggiLizerFXDSP::CaclulateBufferSampleSize(const uint& in_uSampleRate, const float& in_fSplice) const
+unsigned int MaggiLizerFXDSP::ConvertMillisecondsToSamples(const uint& in_uSampleRate, const float& in_fMilliseconds) const
 {
     // in_fSplice is in milliseconds, divide by 1000 to get seconds.
-    return (uint)(in_fSplice / (float)1000 * in_uSampleRate);
+    return (uint)(in_fMilliseconds / (float)1000 * in_uSampleRate);
 }
 
 /// <summary>

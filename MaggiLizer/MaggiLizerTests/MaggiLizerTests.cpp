@@ -282,7 +282,7 @@ namespace MaggiLizerTests
 			AssertBufferSingleValues(expected, pBuffer, bufferSize);
 		}
 
-		TEST_METHOD(Method_CaclulateBufferSampleSize)
+		TEST_METHOD(Method_ConvertMillisecondsToSamples)
 		{
 			uint expected = 76800;
 			uint bufferSampleSize = 0; //to be set by test
@@ -293,7 +293,7 @@ namespace MaggiLizerTests
 			MaggiLizerFXDSP* dsp = new MaggiLizerFXDSP;
 
 			//TEST
-			bufferSampleSize = dsp->CaclulateBufferSampleSize(sampleRate, splice);
+			bufferSampleSize = dsp->ConvertMillisecondsToSamples(sampleRate, splice);
 
 			//VALIDATE
 			Assert::AreEqual(expected, bufferSampleSize);
