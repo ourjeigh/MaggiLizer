@@ -38,7 +38,7 @@ static const AkPluginParamID PARAM_SPLICE_ID = 2;
 static const AkPluginParamID PARAM_DELAY_ID = 3;
 static const AkPluginParamID PARAM_RECYCLE_ID = 4;
 static const AkPluginParamID PARAM_MIX_ID = 5;
-static const AkUInt32 NUM_PARAMS = 5;
+static const AkUInt32 NUM_PARAMS = 6;
 
 struct MaggiLizerRTPCParams
 {
