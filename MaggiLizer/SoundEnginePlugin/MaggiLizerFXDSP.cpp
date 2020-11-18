@@ -16,14 +16,12 @@ MaggiLizerFXDSP::~MaggiLizerFXDSP()
 {
 }
 
-void MaggiLizerFXDSP::Init(uint in_uSampleRate, float in_fSplice, uint in_numChannels)
+void MaggiLizerFXDSP::Init(uint in_uSampleRate, uint in_numChannels)
 {
     m_uSampleRate = in_uSampleRate;
     m_uMaxBufferSize = 4 * m_uSampleRate; //Buffer Size needs to be up to 2s (max splice value of 2000ms) played back at half speed
     m_uCurrentCachedBufferSample = 0;
     m_uPlaybackSampleHead = 0;
-
-    m_uBufferSampleSize = ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
 
     m_pCachedBuffer = new float* [in_numChannels];
     m_pPlaybackBuffer = new float* [in_numChannels];

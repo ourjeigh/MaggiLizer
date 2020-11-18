@@ -400,7 +400,7 @@ namespace MaggiLizerTests
 			buffer pBuffer = FillBufferWithData(channels, input, bufferBlockSize);
 
 			MaggiLizerFXDSP* p_DSP = new MaggiLizerFXDSP();
-			p_DSP->Init(sampleRate, splice, channels);
+			p_DSP->Init(sampleRate, channels);
 
 			p_DSP->Execute(pBuffer, channels, bufferBlockSize, recycle, pitch, splice, delay, recycle, mix);
 			
@@ -429,7 +429,7 @@ namespace MaggiLizerTests
 			buffer pBuffer = FillBufferWithData(channels, new float[]{1, 2, 3}, 3, 5);
 			
 			MaggiLizerFXDSP* p_DSP = new MaggiLizerFXDSP();
-			p_DSP->Init(sampleRate, splice, channels);
+			p_DSP->Init(sampleRate, channels);
 
 			p_DSP->Execute(pBuffer, channels, bufferBlockSize, recycle, pitch, splice, delay, recycle, mix);
 

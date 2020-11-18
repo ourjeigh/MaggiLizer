@@ -11,7 +11,7 @@ public:
 	MaggiLizerFXDSP();
 	~MaggiLizerFXDSP();
 
-	void Init(uint in_uSampleRate, float in_fSplice, uint in_numChannels);
+	void Init(uint in_uSampleRate, uint in_numChannels);
 	void Term();
 	void Reset();
     void Execute
