@@ -11,7 +11,7 @@ namespace MaggiLizerTests
 	
 	TEST_CLASS(MaggiLizerTests)
 	{
-		typedef unsigned int uint;
+		//typedef unsigned int uint;
 		typedef float** buffer;
 		typedef float* buffer_single;
 		

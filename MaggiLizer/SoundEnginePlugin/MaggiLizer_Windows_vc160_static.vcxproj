@@ -771,11 +771,15 @@
     <ClInclude Include="MaggiLizerFX.h" />
     <ClInclude Include="MaggiLizerFXDSP.h" />
     <ClInclude Include="MaggiLizerFXParams.h" />
+    <ClInclude Include="MonoBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BoundedMonoBuffer.cpp" />
     <ClCompile Include="MaggiLizerFX.cpp" />
     <ClCompile Include="MaggiLizerFXDSP.cpp" />
     <ClCompile Include="MaggiLizerFXParams.cpp" />
+    <ClCompile Include="CircularMonoBuffer.cpp" />
+    <ClCompile Include="MonoBufferUtilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

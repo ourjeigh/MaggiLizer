@@ -4,10 +4,14 @@
     <ClInclude Include="MaggiLizerFX.h" />
     <ClInclude Include="MaggiLizerFXParams.h" />
     <ClInclude Include="MaggiLizerFXDSP.h" />
+    <ClInclude Include="MonoBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MaggiLizerFX.cpp" />
     <ClCompile Include="MaggiLizerFXParams.cpp" />
     <ClCompile Include="MaggiLizerFXDSP.cpp" />
+    <ClCompile Include="CircularMonoBuffer.cpp" />
+    <ClCompile Include="BoundedMonoBuffer.cpp" />
+    <ClCompile Include="MonoBufferUtilities.cpp" />
   </ItemGroup>
 </Project>
