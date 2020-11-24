@@ -1,11 +1,10 @@
 # MaggiLizer
 Crystallizer knockoff Wwise Plugin
-AKA
-The Secret Sauce for making all your sound taste better.
 
+![MaggiLizer Plugin](https://i.imgur.com/mtQWric.png)
 
 ## Download The Libraries
-https://github.com/rjmattingly/MaggiLizer/releases
+https://github.com/rjmattingly/MaggiLizer/releases/latest \
 Both the xml and the dll go in {YourWwiseInstallDirectory}\Authoring\x64\Release\bin\Plugins
 
 ## Working with the Source
@@ -44,7 +43,7 @@ Both the xml and the dll go in {YourWwiseInstallDirectory}\Authoring\x64\Release
 - Open MaggiLizer_Authoring_Windows_vc160.sln with Visual Studio 2019
 - Select the MaggiLizer project in the Solution Explorer (not MaggiLizerFX)
 - Open the Properties by right clicking or pressing Alt + Enter
-- Change the configuration (top left) to Debug
+- Change the configuration (top left) to Debu
 - Change the Output Directory replacing '$Configuration' with 'Release'
   - This is because the Wwise Authoring app does not look in the x64\Debug directory for plugins, so they need to be put in Release.
 - Open Wwise 2019 Authoring app
