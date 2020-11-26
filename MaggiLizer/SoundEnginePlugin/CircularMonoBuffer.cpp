@@ -93,19 +93,9 @@ bool CircularMonoBuffer::WriteSilenceBlock(const uint& in_uBlockSize)
 	return true;
 }
 
-//bool CircularMonoBuffer::SetReadDelay(const uint& in_uBlockSize)
-//{
-//	m_uBufferWritePosition = (m_uBufferWritePosition + in_uBlockSize) % m_uBufferSize;
-//	return true;
-//}
-
 bool CircularMonoBuffer::GetLastWrittenBufferBlock(const uint& in_uBlockSize, float* out_pBuffer)
 {
-	uint iStartPosition = m_uBufferWritePosition - in_uBlockSize;
-	if (m_uBufferWritePosition + in_uBlockSize < m_uBufferSize)
-	{
-		iStartPosition = m_uBufferSize - (m_uBufferWritePosition + in_uBlockSize);
-	}
+	uint iStartPosition = (m_uBufferWritePosition + m_uBufferSize - in_uBlockSize) % m_uBufferSize;
 	for (uint i = 0; i < in_uBlockSize; i++)
 	{
 		out_pBuffer[i] = m_pBuffer[iStartPosition];

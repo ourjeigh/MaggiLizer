@@ -116,18 +116,6 @@ bool LinearMonoBuffer::WriteSilenceBlock(const uint& in_uBlockSize)
 	return true;
 }
 
-//bool LinearMonoBuffer::SetReadDelay(const uint& in_uBlockSize)
-//{
-//	m_uBufferWritePosition = (m_uBufferWritePosition + in_uBlockSize);
-//	if (m_uBufferWritePosition >= m_uBufferSize)
-//	{
-//		m_bIsFilled = true;
-//		return false;
-//	}
-//
-//	return true;
-//}
-
 bool LinearMonoBuffer::GetLastWrittenBufferBlock(const uint& in_uBlockSize, float* out_pBuffer)
 {
 	return false;
