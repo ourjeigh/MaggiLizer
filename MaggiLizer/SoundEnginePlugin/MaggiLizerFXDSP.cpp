@@ -107,7 +107,7 @@ void MaggiLizerFXDSP::ProcessSingleFrame(
         const float fSpeed = MonoBufferUtilities::CalculateSpeed(in_fPitch);
         const uint filledPlaybackSampleSize = MonoBufferUtilities::ApplySpeedBufferSingle(io_pSpliceBuffer, io_pPlaybackBuffer, fSpeed);
         
-        MonoBufferUtilities::ApplySmoothingAtIndex(io_pPlaybackBuffer, playbackWritePosition, m_cSmoothWindowSize);
+        //MonoBufferUtilities::ApplySmoothingAtIndex(io_pPlaybackBuffer, playbackWritePosition, m_cSmoothWindowSize);
         const uint uSpliceSampleSize = MonoBufferUtilities::ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
         io_pSpliceBuffer->SetBufferSize(uSpliceSampleSize);
         

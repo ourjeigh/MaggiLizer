@@ -55,8 +55,9 @@ public:
     static uint ApplySpeedBufferSingle(MonoBuffer* in_pBuffer, MonoBuffer* out_pBuffer, const float& in_fSpeed)
     {
         uint uOutWriteSize = CalculateBufferSizeChangeFromSpeed(in_pBuffer->m_uBufferSize, in_fSpeed);
-
+        const uint smoothWindowSize = 30;
         float position = 0.0;
+        bool outBufferHadData = out_pBuffer->HasData();
         for (uint i = 0; i < uOutWriteSize; i++)
         {
             // can't go past in_uBufferSize since that's the length of the input buffer.
@@ -73,7 +74,13 @@ public:
             float prev = in_pBuffer->m_pBuffer[intPos];
             float next = in_pBuffer->m_pBuffer[intPos + 1];
 
-            out_pBuffer->WriteNextBufferValue((1 - floatPos) * prev + (floatPos * next));
+            float output = (1 - floatPos) * prev + (floatPos * next);
+            if (outBufferHadData && i < smoothWindowSize)
+            {
+                const float weight = ((float)i / (float)smoothWindowSize);
+                output = CalculateWetDryMix(out_pBuffer->m_pBuffer[out_pBuffer->m_uBufferWritePosition], output, weight);
+            }
+            out_pBuffer->WriteNextBufferValue(output);
 
             position += in_fSpeed;
         }
@@ -92,7 +99,7 @@ public:
 
     static bool CopyLastWrittenBufferBlock(MonoBuffer* in_pBuffer, MonoBuffer* out_pBuffer, const uint& in_uBlockSize)
     {
-        float* pBufferBlock =  new float[in_uBlockSize];
+        float* pBufferBlock = new float[in_uBlockSize];
         in_pBuffer->GetLastWrittenBufferBlock(in_uBlockSize, pBufferBlock);
         out_pBuffer->PrefillBuffer(pBufferBlock, in_uBlockSize);
         return true;
@@ -103,22 +110,14 @@ public:
         return (in_fDry) * (1 - in_fMix) + in_fWet * in_fMix;
     }
 
-    static float ReadBufferMixWithDry(MonoBuffer* io_pBuffer, const float& in_fDry, const float& in_fMix)
-    {
-        float fWet = 0;
-        io_pBuffer->ReadNextBufferValue(fWet);
-
-        return CalculateWetDryMix(in_fDry, fWet, in_fMix);
-    }
-
     static void ApplySmoothingAtIndex(MonoBuffer* io_pBuffer, const uint& in_uPosition, const uint& in_uSmoothWindowSize)
     {
         const float fStartValue = io_pBuffer->m_pBuffer[in_uPosition];
-        for (uint i = in_uPosition; i < in_uPosition + in_uSmoothWindowSize; i++)
+        for (uint i = 0; i < in_uSmoothWindowSize; i++)
         {
-            const float weight = 1.0 - ((float)i / (float)in_uSmoothWindowSize);
-            const float smoothedValue = MonoBufferUtilities::CalculateWetDryMix(io_pBuffer->m_pBuffer[i], fStartValue, weight);
-            io_pBuffer->m_pBuffer[i] = smoothedValue;
+            const float weight = ((float)i / (float)in_uSmoothWindowSize);
+            const float smoothedValue = MonoBufferUtilities::CalculateWetDryMix(fStartValue, io_pBuffer->m_pBuffer[in_uPosition + i], weight);
+            io_pBuffer->m_pBuffer[in_uPosition + i] = smoothedValue;
         }
     }
 };

@@ -176,68 +176,6 @@ namespace MaggiLizerTests
 //			AssertBufferSingleValues(expected, pBuffer, bufferSize);
 //		}
 //
-//		TEST_METHOD(Method_ApplyReverseBufferSingle)
-//		{
-//			float input[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-//			float expected[] = { 8, 7, 6, 5, 4, 3, 2, 1, 0};
-//
-//			//SETUP
-//			uint bufferSize = 9;
-//			bool reverse = true;
-//
-//			MaggiLizerFXDSP* dsp = new MaggiLizerFXDSP;
-//
-//			buffer_single pBuffer = FillBufferSingleWithData(input, bufferSize);
-//			
-//			//TEST
-//			dsp->ApplyReverseBufferSingle(pBuffer, bufferSize, reverse);
-//
-//			//VALIDATE
-//			AssertBufferSingleValues(expected, pBuffer, bufferSize);
-//		}
-//
-//		TEST_METHOD(Method_ApplySpeedBufferSingle_Double)
-//		{
-//			float input[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-//			float expected[] = { 0, 2, 4, 6, 8, 0, 0, 0, 0, 0};
-//			
-//			// SETUP
-//			uint bufferSize = 10;
-//			float speed = 2.0;
-//
-//			MaggiLizerFXDSP* dsp = new MaggiLizerFXDSP;
-//
-//			buffer_single in_pBuffer = FillBufferSingleWithData(input, bufferSize);
-//			buffer_single out_pBuffer = FillBufferSingleWithData(new float{ 0 }, 1, bufferSize);
-//
-//			//TEST
-//			dsp->ApplySpeedBufferSingle(in_pBuffer, out_pBuffer, bufferSize, speed);
-//
-//			//VALIDATE
-//			AssertBufferSingleValues(expected, out_pBuffer, bufferSize);
-//		}
-//
-//		TEST_METHOD(Method_ApplySpeedBufferSingle_Half)
-//		{
-//			float input[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-//			float expected[] = { 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5 };
-//
-//			// SETUP
-//			uint bufferSize = 10;
-//			float speed = 0.5;
-//
-//			MaggiLizerFXDSP* dsp = new MaggiLizerFXDSP;
-//
-//			buffer_single in_pBuffer = FillBufferSingleWithData(input, bufferSize);
-//			buffer_single out_pBuffer = FillBufferSingleWithData(new float{ 0 }, 1, bufferSize);
-//
-//			//TEST
-//			dsp->ApplySpeedBufferSingle(in_pBuffer, out_pBuffer, bufferSize, speed);
-//
-//			//VALIDATE
-//			AssertBufferSingleValues(expected, out_pBuffer, bufferSize);
-//		}
-//
 //		TEST_METHOD(Method_ApplyRecycleBufferValue)
 //		{
 //			float pattern[] = { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };

@@ -13,7 +13,7 @@ CircularMonoBuffer::~CircularMonoBuffer()
 /// </summary>
 bool CircularMonoBuffer::ReadNextBufferValue(float& out_fValue)
 {
-	uint delayOffset = (m_uBufferReadPosition + m_uBufferSize + m_uBufferReadDelay) % m_uBufferSize;
+	uint delayOffset = (m_uBufferReadPosition + m_uBufferSize - m_uBufferReadDelay ) % m_uBufferSize;
 
 	out_fValue = m_pBuffer[delayOffset];
 	m_uBufferReadPosition++;

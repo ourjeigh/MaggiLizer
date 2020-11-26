@@ -26,9 +26,11 @@ public:
 	virtual bool WriteNextBufferValue(const float& in_fValue) = 0;
 	virtual bool WriteNextBufferBlock(const float* in_pBlock, const uint& in_uBlockSize) = 0;
 	virtual bool WriteSilenceBlock(const uint& in_uBlockSize) = 0;
-	virtual void SetReadDelay(const uint& in_uDelaySampleSize)
+	virtual bool SetReadDelay(const uint& in_uDelaySampleSize)
 	{
+		if (in_uDelaySampleSize >= m_uBufferSize) return false;
 		m_uBufferReadDelay = in_uDelaySampleSize;
+		return true;
 	};
 	/// <summary>
 	/// Add buffer data without modifying Write Position or flipping IsFilled flag.
@@ -51,8 +53,8 @@ public:
 	virtual bool IsFilled() { return m_bIsFilled; };
 	virtual bool IsReadComplete() { return m_bReadComplete; };
 	virtual bool HasData() { return m_bHasData; };
-	virtual bool ReadPosition() { return m_uBufferReadPosition; };
-	virtual bool WritePosition() { return m_uBufferWritePosition; };
+	virtual uint ReadPosition() { return m_uBufferReadPosition; };
+	virtual uint WritePosition() { return m_uBufferWritePosition; };
 	virtual void RestartPlayback()
 	{
 		m_bReadComplete = false;
@@ -61,6 +63,7 @@ public:
 	virtual void ResetBuffer()
 	{
 		m_bIsFilled = false;
+		m_bReadComplete = false;
 		m_bHasData = false;
 		m_uBufferReadPosition = 0;
 		m_uBufferWritePosition = 0;
