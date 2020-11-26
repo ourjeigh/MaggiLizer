@@ -5,9 +5,7 @@
 MaggiLizerFXDSP::MaggiLizerFXDSP() :
     m_pSpliceBuffer(nullptr),
     m_pPlaybackBuffer(nullptr),
-    m_uSampleRate(0),
-    m_uMaxBufferSize(0),
-    m_uSpliceSampleSize(0)
+    m_uSampleRate(0)
 {
 }
 
@@ -15,21 +13,20 @@ MaggiLizerFXDSP::~MaggiLizerFXDSP()
 {
 }
 
-void MaggiLizerFXDSP::Init(uint in_uSampleRate, uint in_numChannels)
+void MaggiLizerFXDSP::Init(uint in_uSampleRate, uint in_numChannels, uint in_fSplice)
 {
     m_uSampleRate = in_uSampleRate;
-    m_uMaxBufferSize = 6* m_uSampleRate; //Buffer Size needs to be up to 2s (max splice value of 2000ms) played back at half speed
+    const uint uMaxBufferSize = m_uBufferLengthMilliseconds/1000 * m_uSampleRate;
 
-    m_pSpliceBuffer = new BoundedMonoBuffer[in_numChannels];
-    m_pPlaybackBuffer = new CircularMonoBuffer[in_numChannels];
+    m_pSpliceBuffer = new LinearMonoBuffer*[in_numChannels];
+    m_pPlaybackBuffer = new CircularMonoBuffer*[in_numChannels];
 
 
     for (uint i = 0; i < in_numChannels; i++)
     {
-        m_pSpliceBuffer[i].SetBufferSize(m_uMaxBufferSize);
-        m_pPlaybackBuffer[i].SetBufferSize(m_uMaxBufferSize);
-        m_pSpliceBuffer[i].ResetBuffer();
-        m_pPlaybackBuffer[i].ResetBuffer();
+        const uint uSpliceSampleSize = MonoBufferUtilities::ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
+        m_pSpliceBuffer[i] = new LinearMonoBuffer(uSpliceSampleSize);
+        m_pPlaybackBuffer[i] = new CircularMonoBuffer(uMaxBufferSize);
     }
 }
 
@@ -44,7 +41,7 @@ void MaggiLizerFXDSP::Reset()
 void MaggiLizerFXDSP::Execute(
     float**  io_pBuffer,
     const uint in_uNumChannels,
-    const uint in_uValidFrames,
+    const uint in_uBlockSize,
     const bool& in_bReverse,
     const float& in_fPitch,
     const float& in_fSplice,
@@ -52,220 +49,85 @@ void MaggiLizerFXDSP::Execute(
     const float& in_fRecycle,
     const float& in_fMix)
 {
-    //Update Buffer Size
-    m_uSpliceSampleSize = ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
-
-    float fSpeed = CalculateSpeed(in_fPitch);
-
     uint uFramesProcessed = 0;
     bool bBufferFilled = false;
 
     for (uint channel = 0; channel < in_uNumChannels; channel++)
     {
+        for (uint frame = 0; frame < in_uBlockSize; frame++)
+        {
+            ProcessSingleFrame(
+                io_pBuffer[channel],
+                m_pSpliceBuffer[channel],
+                m_pPlaybackBuffer[channel],
+                frame,
+                in_bReverse,
+                in_fPitch,
+                in_fSplice,
+                in_fDelay,
+                in_fRecycle,
+                in_fMix
+            );
+        }
+    }
+}
+
+void MaggiLizerFXDSP::ProcessSingleFrame(
+        float* io_pBuffer,
+        MonoBuffer* io_pSpliceBuffer,
+        MonoBuffer* io_pPlaybackBuffer,
+        const uint& in_uFrame, 
+        const bool& in_bReverse,
+        const float & in_fPitch,
+        const float& in_fSplice,
+        const float& in_fDelay,
+        const float& in_fRecycle,
+        const float& in_fMix)
+{
+    float input = io_pBuffer[in_uFrame];
+    
+    // Delay
+    if (in_fDelay > 0)
+    {
+        const uint delaySampleSize = MonoBufferUtilities::ConvertMillisecondsToSamples(m_uSampleRate, in_fDelay);
+        io_pPlaybackBuffer->SetReadDelay(delaySampleSize);
+    }
+
+    //Splice
+    if (io_pSpliceBuffer->IsFilled())
+    {
+        // Reverse 
+        if (in_bReverse)
+        {
+            MonoBufferUtilities::ApplyReverseBufferSingle(io_pSpliceBuffer);
+        }
         
+        // Pitch
+        const uint playbackWritePosition = io_pPlaybackBuffer->WritePosition();
+        const float fSpeed = MonoBufferUtilities::CalculateSpeed(in_fPitch);
+        const uint filledPlaybackSampleSize = MonoBufferUtilities::ApplySpeedBufferSingle(io_pSpliceBuffer, io_pPlaybackBuffer, fSpeed);
+        
+        MonoBufferUtilities::ApplySmoothingAtIndex(io_pPlaybackBuffer, playbackWritePosition, m_cSmoothWindowSize);
+        const uint uSpliceSampleSize = MonoBufferUtilities::ConvertMillisecondsToSamples(m_uSampleRate, in_fSplice);
+        io_pSpliceBuffer->SetBufferSize(uSpliceSampleSize);
+        
+        //Recyle
+        MonoBufferUtilities::CopyLastWrittenBufferBlock(io_pPlaybackBuffer, io_pSpliceBuffer, filledPlaybackSampleSize);
     }
 
-}
+    float recycled = 0;
+    io_pSpliceBuffer->ReadNextBufferValue(recycled);
+    recycled = input + recycled * in_fRecycle;
 
-void MaggiLizerFXDSP::ProcessChannel(float* io_pBuffer, MonoBuffer* in_pCachedBuffer, MonoBuffer* in_pPlaybackBuffer, uint in_uBlockSize, bool reverse)
-{
-    for (uint frame = 0; frame < in_uBlockSize; frame++)
+    io_pSpliceBuffer->WriteNextBufferValue(recycled);
+
+    float output = 0;
+    if (io_pPlaybackBuffer->HasData())
     {
-        const float input = io_pBuffer[frame];
-
-        if (in_pCachedBuffer->FilledFrames)
-        {
-            if(reverse)
-        }
+        io_pPlaybackBuffer->ReadNextBufferValue(output);
     }
-}
 
-//void ProcessSingleFrame(
-//    float** io_pBuffer,
-//    MonoBuffer* in_pCachedBuffer,
-//    MonoBuffer* in_pPlaybackBuffer,
-//    const uint& channel,
-//    const uint& uFramesProcessed, 
-//    const float& speed,
-//    const bool& in_bReverse,
-//    const float& in_fRecycle,
-//    const float& in_fMix,
-//    bool& bufferFilled)
-//{
-//    float input = GetBufferValue(io_pBuffer, channel, uFramesProcessed);
-//
-//    // handle multiple channels by setting a flag that the buffer is filled
-//    // in channel 0, signaling to copy buffers and clear for all subsequent channels.
-//    if (m_uCurrentCachedBufferSample >= m_uSpliceSampleSize)
-//    {
-//        bufferFilled = true;
-//        m_uCurrentCachedBufferSample = 0;
-//        m_uPlaybackSampleHead = 0;
-//    }
-//    if (bufferFilled)
-//    {
-//        const float lastCachedValue = GetBufferValue(m_pCachedBuffer,channel, m_uSpliceSampleSize);
-//        ClearBufferSingle(m_pPlaybackBuffer[channel], m_uMaxBufferSize);
-//        ApplyReverseBufferSingle(m_pCachedBuffer[channel], m_uSpliceSampleSize, in_bReverse);
-//        ApplySpeedBufferSingle(m_pCachedBuffer[channel], m_pPlaybackBuffer[channel], m_uSpliceSampleSize, speed);
-//        ApplySmoothBufferSingle(m_pPlaybackBuffer[channel], lastCachedValue, m_cSmoothWindowSize);
-//        // Copy playbackBuffer back into cachedBuffer after all the modification is done so that it can be recycled with new input
-//        CopyBufferSingleValues(m_pPlaybackBuffer[channel], m_pCachedBuffer[channel], m_uMaxBufferSize);
-//    }
-//    
-//    ApplyRecycleBufferValue(m_pCachedBuffer, channel, m_uCurrentCachedBufferSample, input, in_fRecycle);
-//
-//    const float output = GetBufferValue(m_pPlaybackBuffer, channel, m_uPlaybackSampleHead);
-//    const float mixed = CalculateWetDryMix(input, output, in_fMix);
-//
-//    //TODO: Check for instantaneous pops based on the new mixed value being "drastically" 
-//    // different from this channel's last frame value.
-//    // - issue: https://github.com/rjmattingly/MaggiLizer/projects/1#card-49461406
-//
-//    SetBufferValue(io_pBuffer, channel, uFramesProcessed, mixed);
-//}
+    float mix = MonoBufferUtilities::CalculateWetDryMix(input, output, in_fMix);
 
-// Recycle using existing cachedBuffer value combined with new input value.
-// 2 options:
-// - Option 1: Mix 2 signals as wet/dry based on Recycle percent - max output volume of 1 and 100% Recycle values seem to decay to 0.
-// - Option 2: Use full input signal, add Recycled signal on top with a volume multiplied by Recycle Percent. Max volume > 1
-// Since my experience with Recycle/Feedback parameters is that 100% values cause a much louder signal, I think Option 2 is
-// the way to go here.
-void MaggiLizerFXDSP::ApplyRecycleBufferValue(float** io_pBuffer, const uint& channel, const uint& samplePosition, const float& input, const float& in_fRecycle)
-{
-    SetBufferValue(io_pBuffer, channel, samplePosition,
-        //Option 1:
-        //CalculateWetDryMix(input, GetBufferValue(m_pCachedBuffer, channel, m_uCurrentCachedBufferSample), in_fRecycle)
-        //Option 2:
-        input + GetBufferValue(io_pBuffer, channel, samplePosition) * in_fRecycle
-    );
-}
-
-void MaggiLizerFXDSP::ApplySmoothBufferSingle(float* io_pBuffer, const float& in_fStartValue, const uint& in_uSmoothWindowSize)
-{
-    for (uint i = 0; i < in_uSmoothWindowSize; i++)
-    {
-        const float weight = 1.0 - ((float)i/(float)in_uSmoothWindowSize);
-        const float smoothedValue = CalculateWetDryMix(io_pBuffer[i], in_fStartValue, weight);
-        io_pBuffer[i] = smoothedValue;
-    }
-}
-
-void MaggiLizerFXDSP::SetBufferValue(float** io_pBuffer, const uint& in_uChannel, const uint& in_uBufferSamplePosition, const float& in_fInput)
-{
-    io_pBuffer[in_uChannel][in_uBufferSamplePosition] = in_fInput;
-}
-
-float MaggiLizerFXDSP::GetBufferValue(float** in_pBuffer, const uint& in_channel, const uint& in_uBufferPosition) const
-{
-    return in_pBuffer[in_channel][in_uBufferPosition];
-}
-
-void MaggiLizerFXDSP::SwapBufferValues(float* a, float* b)
-{
-    float temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-void MaggiLizerFXDSP::ApplyReverseBufferSingle(float* io_pBuffer, const uint& in_uBufferSize, const bool& in_bReverse)
-{
-    if (!in_bReverse) return;
-
-    float* pointerLeft = io_pBuffer;
-    float* pointerRight = io_pBuffer + in_uBufferSize - 1;
-
-    while (pointerLeft < pointerRight) 
-    {
-        SwapBufferValues(pointerLeft, pointerRight);
-        pointerLeft++;
-        pointerRight--;
-    }
-}
-
-/// <summary>
-/// - Resize the output buffer length if speed isn't 1.
-/// - Iterate input buffer
-/// - Interpolate values due to speed change
-/// - Copy interpolated value to output buffer.
-/// </summary>
-void MaggiLizerFXDSP::ApplySpeedBufferSingle(float* in_pBuffer, float* out_pBuffer, const uint& in_uBufferSize, const float& in_fSpeed)
-{
-    uint uOutBufferSize = CalculateBufferSizeChangeFromSpeed(in_uBufferSize, in_fSpeed);
-
-    float position = 0.0;
-    for (uint i = 0; i < uOutBufferSize; i++)
-    {
-        // can't go past in_uBufferSize since that's the length of the input buffer.
-        if (position >= in_uBufferSize - 1)
-        {
-            // If we were to set position = 0 here it would start repeating the input signal for speeds > 1.
-            // This doesn't sound very good, so we just leave the rest of the buffer empty.
-            return;
-        }
-
-        uint intPos = floor(position);
-        float floatPos = position - intPos;
-
-        float prev = in_pBuffer[intPos];
-        float next = in_pBuffer[intPos + 1];
-
-        out_pBuffer[i] = (1 - floatPos) * prev + (floatPos * next);
-
-        position += in_fSpeed;
-    }
-}
-
-/// <summary>
-/// Instead of creating new arrays, just zero them out to prevent garbage values from being outputed. 
-/// 0's will just be silence.
-/// </summary>
-//void MaggiLizerFXDSP::ClearBufferSingle(float* buffer, const uint& bufferSize)
-//{
-//    for (uint i = 0; i < bufferSize; i++)
-//    {
-//        buffer[i] = 0;
-//    }
-//}
-
-void MaggiLizerFXDSP::CopyBufferSingleValues(float* in_pBuffer, float* out_pBuffer, const uint& in_uBufferSize)
-{
-    for (uint i = 0; i < in_uBufferSize; i++)
-    {
-        out_pBuffer[i] = in_pBuffer[i];
-    }
-}
-
-
-/// <summary>
-/// Scale the output buffer size to adjust for more/less samples due to speed if speed isn't 1.
-/// </summary>
-unsigned int MaggiLizerFXDSP::CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed) const
-{
-    return floor((float)in_uBufferSize / in_fSpeed);
-}
-
-/// <summary>
-/// Actual buffer size for iteration is based on splice value
-/// </summary>
-unsigned int MaggiLizerFXDSP::ConvertMillisecondsToSamples(const uint& in_uSampleRate, const float& in_fMilliseconds) const
-{
-    // in_fSplice is in milliseconds, divide by 1000 to get seconds.
-    return (uint)(in_fMilliseconds / (float)1000 * in_uSampleRate);
-}
-
-/// <summary>
-/// Pitch change is just playback speed
-/// </summary>
-float MaggiLizerFXDSP::CalculateSpeed(const float& in_fPitch) const
-{
-    return pow(2, in_fPitch / 1200);
-}
-
-/// <summary>
-/// Description: Mix generated output value with input buffer value based on mix value.
-/// </summary>
-float MaggiLizerFXDSP::CalculateWetDryMix(const float& in_fDry, const float& in_fWet, const float in_fMix) const
-{
-    return (in_fDry) * (1 - in_fMix) + in_fWet * in_fMix;
+    io_pBuffer[in_uFrame] = mix;
 }

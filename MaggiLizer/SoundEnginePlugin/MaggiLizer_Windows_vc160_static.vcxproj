@@ -774,7 +774,7 @@
     <ClInclude Include="MonoBuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BoundedMonoBuffer.cpp" />
+    <ClCompile Include="LinearMonoBuffer.cpp" />
     <ClCompile Include="MaggiLizerFX.cpp" />
     <ClCompile Include="MaggiLizerFXDSP.cpp" />
     <ClCompile Include="MaggiLizerFXParams.cpp" />

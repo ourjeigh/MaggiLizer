@@ -70,7 +70,7 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="Delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay (Not Working)">
+			<Property Name="Delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
 				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
 				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>3</AudioEnginePropertyID>

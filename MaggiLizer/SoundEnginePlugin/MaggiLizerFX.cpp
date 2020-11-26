@@ -61,7 +61,7 @@ AKRESULT MaggiLizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
     m_pContext = in_pContext;
 
     m_pDSP = new MaggiLizerFXDSP();
-    m_pDSP->Init(in_rFormat.uSampleRate, in_rFormat.GetNumChannels());
+    m_pDSP->Init(in_rFormat.uSampleRate, in_rFormat.GetNumChannels(), m_pParams->RTPC.fSplice);
 
     return AK_Success;
 }

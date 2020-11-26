@@ -11,7 +11,7 @@
     <ClCompile Include="MaggiLizerFXParams.cpp" />
     <ClCompile Include="MaggiLizerFXDSP.cpp" />
     <ClCompile Include="CircularMonoBuffer.cpp" />
-    <ClCompile Include="BoundedMonoBuffer.cpp" />
     <ClCompile Include="MonoBufferUtilities.cpp" />
+    <ClCompile Include="LinearMonoBuffer.cpp" />
   </ItemGroup>
 </Project>
