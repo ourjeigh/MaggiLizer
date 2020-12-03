@@ -13,7 +13,7 @@ namespace MaggiLizerTests
 		typedef unsigned int uint;
 		const float assert_tolerance = 0.0001;
 
-		TEST_METHOD(MBU_CopyLastWrittenBufferBlock)
+		TEST_METHOD(MBU_CopyLastWrittenBufferBlock_NoWrap)
 		{
 			float input[] = { 1, 3, 5, 7, 9, 2, 4, 6, 8, 0.1 };
 			uint bufferSize = 10;
@@ -23,6 +23,28 @@ namespace MaggiLizerTests
 
 			MonoBuffer* buffer = new CircularMonoBuffer(bufferSize);
 			buffer->WriteNextBufferBlock(input, bufferSize);
+			MonoBufferUtilities::CopyLastWrittenBufferBlock(buffer, output, lastBlockSize);
+
+			for (uint i = 0; i < lastBlockSize; i++)
+			{
+				float bufferVal = 0;
+				output->ReadNextBufferValue(bufferVal);
+				Assert::AreEqual(expected[i], bufferVal);
+			}
+		}
+
+		TEST_METHOD(MBU_CopyLastWrittenBufferBlock_Wrap)
+		{
+			float input[] = { 1, 3, 5, 7, 9, 2, 4, 6, 8, 0.1 };
+			uint bufferSize = 10;
+			uint lastBlockSize = 4;
+			float expected[] = {8, 0.1, 2.5, 1.7 };
+			MonoBuffer* output = new LinearMonoBuffer(lastBlockSize);
+
+			MonoBuffer* buffer = new CircularMonoBuffer(bufferSize);
+			buffer->WriteNextBufferBlock(input, bufferSize);
+			buffer->WriteNextBufferValue(2.5);
+			buffer->WriteNextBufferValue(1.7);
 			MonoBufferUtilities::CopyLastWrittenBufferBlock(buffer, output, lastBlockSize);
 
 			for (uint i = 0; i < lastBlockSize; i++)
