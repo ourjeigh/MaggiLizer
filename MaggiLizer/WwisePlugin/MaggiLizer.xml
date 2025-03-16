@@ -22,41 +22,41 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2023 Audiokinetic Inc.
 -->
 <!--
 See https://www.audiokinetic.com/library/edge/?source=SDK&id=plugin__xml.html
 for the documentation about the plugin xml format
 -->
 <PluginModule>
-  <EffectPlugin Name="MaggiLizer" CompanyID="64" PluginID="4000">
-    <PluginInfo>
-      <PlatformSupport>
-        <Platform Name="Any">
-          <CanBeInsertOnBusses>true</CanBeInsertOnBusses>
-          <CanBeInsertOnAudioObjects>true</CanBeInsertOnAudioObjects>
-          <CanBeRendered>true</CanBeRendered>
-        </Platform>
-      </PlatformSupport>
-    </PluginInfo>
-    <Properties>
+	<EffectPlugin Name="MaggiLizer" CompanyID="64" PluginID="2246">
+		<PluginInfo>
+			<PlatformSupport>
+				<Platform Name="Any">
+					<CanBeInsertOnBusses>true</CanBeInsertOnBusses>
+					<CanBeInsertOnAudioObjects>true</CanBeInsertOnAudioObjects>
+					<CanBeRendered>true</CanBeRendered>
+				</Platform>
+			</PlatformSupport>
+		</PluginInfo>
+		<Properties>
 			<Property Name="Reverse" Type="bool" SupportRTPCType="Exclusive" DisplayName="Reverse">
 				<DefaultValue>false</DefaultValue>
 				<AudioEnginePropertyID>0</AudioEnginePropertyID>
 			</Property>
-      <Property Name="Pitch" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Pitch">
-        <UserInterface Step="100" Fine="1" Decimals="0" UIMax="1200" />
-        <DefaultValue>0.0</DefaultValue>
-        <AudioEnginePropertyID>1</AudioEnginePropertyID>
-        <Restrictions>
-          <ValueRestriction>
-            <Range Type="Real32">
-              <Min>-1200</Min>
-              <Max>1200</Max>
-            </Range>
-          </ValueRestriction>
-        </Restrictions>
-      </Property>
+			<Property Name="Pitch" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Pitch">
+				<UserInterface Step="100" Fine="1" Decimals="0" UIMax="1200" />
+				<DefaultValue>0.0</DefaultValue>
+				<AudioEnginePropertyID>1</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>-1200</Min>
+							<Max>1200</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
 			<Property Name="Splice" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Splice">
 				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
 				<DefaultValue>0.0</DefaultValue>
@@ -109,6 +109,6 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-    </Properties>
-  </EffectPlugin>
+		</Properties>
+	</EffectPlugin>
 </PluginModule>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A79706DC-4423-4269-8CB7-7898AD54B147}" SchemaVersion="123">
+	<AudioObjects>
+		<WorkUnit Name="Default Work Unit" ID="{A79706DC-4423-4269-8CB7-7898AD54B147}" PersistMode="Standalone">
+			<ChildrenList>
+				<Sound Name="test" ID="{1C8E6B29-D6CD-4DE5-BA36-BF197459A0A9}" ShortID="996910526">
+					<PropertyList>
+						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{97BB9AE3-AB5A-4328-8D80-094F362A685E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9EC5B4F4-55DC-4597-91CC-3ADDF55ACC59}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<SourcePlugin Name="Sine" ID="{DC64C857-0B08-4341-93F5-CBB9D39E8659}" ShortID="636550966" PluginName="Wwise Sine" CompanyID="0" PluginID="100">
+							<Language>SFX</Language>
+						</SourcePlugin>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Effects">
+							<Reference>
+								<Local>
+									<EffectSlot Name="" ID="{EC36F87A-81B4-413B-8468-2F09FCC107B3}" ShortID="327402378">
+										<ReferenceList>
+											<Reference Name="Effect">
+												<Custom>
+													<Effect Name="MaggiLizer (Custom)" ID="{3C45141E-6BDB-4330-8795-89C3226222CC}" ShortID="511356918" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3"/>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</Local>
+							</Reference>
+						</ObjectList>
+					</ObjectLists>
+					<ActiveSourceList>
+						<ActiveSource Name="Sine" ID="{DC64C857-0B08-4341-93F5-CBB9D39E8659}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
+	</AudioObjects>
+</WwiseDocument>
