@@ -35,10 +35,16 @@ maggilizerPlugin::~maggilizerPlugin()
 {
 }
 
-bool maggilizerPlugin::GetBankParameters(const GUID & in_guidPlatform, AK::Wwise::Plugin::DataWriter& in_dataWriter) const
+bool maggilizerPlugin::GetBankParameters(const GUID& in_guidPlatform, AK::Wwise::Plugin::DataWriter& in_dataWriter) const
 {
     // Write bank data here
-    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "Placeholder"));
+    // See maggilizer.xml property Names
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "reverse"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "pitch"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "splice"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "delay"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "recycle"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "mix"));
 
     return true;
 }

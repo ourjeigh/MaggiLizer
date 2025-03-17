@@ -380,8 +380,8 @@
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug(StaticCRT)|x64'">
-    <OutDir>..\..\..\..\..\SDK\$(Platform)_vc170\Debug(StaticCRT)\lib\</OutDir>
-    <IntDir>..\..\..\..\..\SDK\$(Platform)_vc170\Debug(StaticCRT)\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\Build\SDK\$(Platform)_vc170\Debug(StaticCRT)\lib\</OutDir>
+    <IntDir>..\Build\SDK\$(Platform)_vc170\Debug(StaticCRT)\obj\$(ProjectName)\</IntDir>
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug(StaticCRT)|ARM64'">
@@ -395,8 +395,8 @@
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile\lib\</OutDir>
-    <IntDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\Build\SDK\$(Platform)_vc170\Profile\lib\</OutDir>
+    <IntDir>..\Build\SDK\$(Platform)_vc170\Profile\obj\$(ProjectName)\</IntDir>
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|ARM64'">
@@ -410,8 +410,8 @@
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile_EnableAsserts|x64'">
-    <OutDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile_EnableAsserts\lib\</OutDir>
-    <IntDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile_EnableAsserts\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\Build\SDK\$(Platform)_vc170\Profile_EnableAsserts\lib\</OutDir>
+    <IntDir>..\Build\SDK\$(Platform)_vc170\Profile_EnableAsserts\obj\$(ProjectName)\</IntDir>
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile_EnableAsserts|ARM64'">
@@ -425,8 +425,8 @@
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile(StaticCRT)|x64'">
-    <OutDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile(StaticCRT)\lib\</OutDir>
-    <IntDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile(StaticCRT)\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\Build\SDK\$(Platform)_vc170\Profile(StaticCRT)\lib\</OutDir>
+    <IntDir>..\Build\SDK\$(Platform)_vc170\Profile(StaticCRT)\obj\$(ProjectName)\</IntDir>
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile(StaticCRT)|ARM64'">
@@ -440,8 +440,8 @@
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile(StaticCRT)_EnableAsserts|x64'">
-    <OutDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile(StaticCRT)_EnableAsserts\lib\</OutDir>
-    <IntDir>..\..\..\..\..\SDK\$(Platform)_vc170\Profile(StaticCRT)_EnableAsserts\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\Build\SDK\$(Platform)_vc170\Profile(StaticCRT)_EnableAsserts\lib\</OutDir>
+    <IntDir>..\Build\SDK\$(Platform)_vc170\Profile(StaticCRT)_EnableAsserts\obj\$(ProjectName)\</IntDir>
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile(StaticCRT)_EnableAsserts|ARM64'">
@@ -470,8 +470,8 @@
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release(StaticCRT)|x64'">
-    <OutDir>..\..\..\..\..\SDK\$(Platform)_vc170\Release(StaticCRT)\lib\</OutDir>
-    <IntDir>..\..\..\..\..\SDK\$(Platform)_vc170\Release(StaticCRT)\obj\$(ProjectName)\</IntDir>
+    <OutDir>..\Build\SDK\$(Platform)_vc170\Release(StaticCRT)\lib\</OutDir>
+    <IntDir>..\Build\SDK\$(Platform)_vc170\Release(StaticCRT)\obj\$(ProjectName)\</IntDir>
     <TargetName>maggilizerFX</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release(StaticCRT)|ARM64'">
@@ -1236,11 +1236,14 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="buffers.h" />
+    <ClInclude Include="buffer_utilies.h" />
     <ClInclude Include="maggilizerFX.h" />
     <ClInclude Include="maggilizerFXFactory.h" />
     <ClInclude Include="maggilizerFXParams.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="buffers.cpp" />
     <ClCompile Include="maggilizerFX.cpp" />
     <ClCompile Include="maggilizerFXParams.cpp" />
   </ItemGroup>

@@ -28,6 +28,10 @@ the specific language governing permissions and limitations under the License.
 #define maggilizerFX_H
 
 #include "maggilizerFXParams.h"
+#include "AK/DSP/AkDelayLineMemory.h"
+#include "buffers.h"
+
+const int k_max_supported_channels = 1;
 
 /// See https://www.audiokinetic.com/library/edge/?source=SDK&id=soundengine__plugins__effects.html
 /// for the documentation about effect plug-ins
@@ -62,9 +66,26 @@ public:
     AKRESULT TimeSkip(AkUInt32 in_uFrames) override;
 
 private:
+    void ProcessSingleFrame(
+        float* io_pBuffer,
+        MonoBuffer* io_pSpliceBuffer,
+        MonoBuffer* io_pPlaybackBuffer,
+        const AkUInt32& in_uFrame,
+        const bool& in_bReverse,
+        const float& in_fPitch,
+        const float& in_fSplice,
+        const float& in_fDelay,
+        const float& in_fRecycle,
+        const float& in_fMix);
+
+    // this pointer is guaranteed to be valid for the lifetime of the effect instance
     maggilizerFXParams* m_pParams;
-    AK::IAkPluginMemAlloc* m_pAllocator;
-    AK::IAkEffectPluginContext* m_pContext;
+    //AK::IAkEffectPluginContext* m_pContext;
+
+    AkUInt32 m_uSampleRate;
+    LinearMonoBuffer** m_pSpliceBuffer;
+    CircularMonoBuffer** m_pPlaybackBuffer;
+    AK::DSP::CAkDelayLineMemory<AkReal32> m_delay;
 };
 
 #endif // maggilizerFX_H

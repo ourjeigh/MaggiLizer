@@ -9210,19 +9210,9 @@
 								<Value>0</Value>
 							</ValueList>
 						</Property>
-						<Property Name="Delay" Type="Real32">
-							<ValueList>
-								<Value>0</Value>
-							</ValueList>
-						</Property>
 						<Property Name="Inclusion" Type="bool">
 							<ValueList>
 								<Value>True</Value>
-							</ValueList>
-						</Property>
-						<Property Name="Mix" Type="Real32">
-							<ValueList>
-								<Value>100</Value>
 							</ValueList>
 						</Property>
 						<Property Name="OverrideColor" Type="bool">
@@ -9230,22 +9220,32 @@
 								<Value>False</Value>
 							</ValueList>
 						</Property>
-						<Property Name="Pitch" Type="Real32">
+						<Property Name="delay" Type="Real32">
 							<ValueList>
 								<Value>0</Value>
 							</ValueList>
 						</Property>
-						<Property Name="Recycle" Type="Real32">
+						<Property Name="mix" Type="Real32">
+							<ValueList>
+								<Value>100</Value>
+							</ValueList>
+						</Property>
+						<Property Name="pitch" Type="Real32">
 							<ValueList>
 								<Value>0</Value>
 							</ValueList>
 						</Property>
-						<Property Name="Reverse" Type="bool">
+						<Property Name="recycle" Type="Real32">
+							<ValueList>
+								<Value>0</Value>
+							</ValueList>
+						</Property>
+						<Property Name="reverse" Type="bool">
 							<ValueList>
 								<Value>False</Value>
 							</ValueList>
 						</Property>
-						<Property Name="Splice" Type="Real32">
+						<Property Name="splice" Type="Real32">
 							<ValueList>
 								<Value>0</Value>
 							</ValueList>

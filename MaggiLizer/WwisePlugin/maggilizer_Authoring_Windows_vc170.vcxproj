@@ -301,7 +301,7 @@ copy /y "$(OutputPath)" "$(WWISEROOT)\Authoring\x64\Release\bin\Plugins\"</Comma
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\..\..\..\..\SDK\$(Platform)_vc170\Profile\lib\maggilizerFX.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\Build\SDK\$(Platform)_vc170\Profile\lib\maggilizerFX.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Build\SDK\$(Platform)_vc170\Profile\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>maggilizer.def</ModuleDefinitionFile>
       <TargetMachine>MachineX64</TargetMachine>
