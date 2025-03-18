@@ -77,11 +77,9 @@
 												<Custom>
 													<Effect Name="MaggiLizer (Custom)" ID="{41D0FD29-7344-4705-AC8A-1F466A6ACF7D}" ShortID="275604185" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
 														<PropertyList>
-															<Property Name="delay" Type="Real32" Value="550"/>
-															<Property Name="mix" Type="Real32" Value="61"/>
-															<Property Name="pitch" Type="Real32" Value="-600"/>
-															<Property Name="recycle" Type="Real32" Value="43"/>
-															<Property Name="reverse" Type="bool" Value="True"/>
+															<Property Name="delay" Type="Real32" Value="210"/>
+															<Property Name="pitch" Type="Real32" Value="-400"/>
+															<Property Name="recycle" Type="Real32" Value="91"/>
 															<Property Name="splice" Type="Real32" Value="320"/>
 														</PropertyList>
 													</Effect>

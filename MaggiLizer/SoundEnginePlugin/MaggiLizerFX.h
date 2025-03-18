@@ -29,6 +29,7 @@ the specific language governing permissions and limitations under the License.
 
 #include "maggilizerFXParams.h"
 #include "AK/DSP/AkDelayLineMemory.h"
+#include "AK/Plugin/PluginServices/AkFXTailHandler.h"
 #include "buffers.h"
 
 const int k_max_supported_channels = 1;
@@ -83,9 +84,19 @@ private:
     //AK::IAkEffectPluginContext* m_pContext;
 
     AkUInt32 m_uSampleRate;
-    LinearMonoBuffer** m_pSpliceBuffer;
-    CircularMonoBuffer** m_pPlaybackBuffer;
-    AK::DSP::CAkDelayLineMemory<AkReal32> m_delay;
+    LinearMonoBuffer** m_ppSpliceBuffer;
+    CircularMonoBuffer** m_ppPlaybackBuffer;
+
+    AkReal32* m_pSpliceBufferMemory;
+    AkUInt32 m_uSpliceBufferSize;
+    AkAudioBuffer m_SpliceBuffer;
+
+    AkReal32* m_pPlaybackBufferMemory;
+    AkUInt32 m_uPlaybackBufferSize;
+    AkAudioBuffer m_PlaybackBuffer;
+
+    AK::DSP::CAkDelayLineMemory<AkReal32> m_DelayMemory; // might not need?
+    AkFXTailHandler m_TailHandler;
 };
 
 #endif // maggilizerFX_H

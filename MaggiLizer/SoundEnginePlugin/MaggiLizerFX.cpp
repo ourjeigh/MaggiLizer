@@ -59,35 +59,51 @@ maggilizerFX::~maggilizerFX()
 
 AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectPluginContext* in_pContext, AK::IAkPluginParam* in_pParams, AkAudioFormat& in_rFormat)
 {
+    // need to call term before setup to avoid a memory leak.
+    m_DelayMemory.Term(in_pAllocator);
+
     m_pParams = static_cast<maggilizerFXParams*>(in_pParams);
     m_uSampleRate = in_rFormat.uSampleRate;
+    const int channel_count = in_rFormat.GetNumChannels();
     const AkUInt32 uMaxBufferSize = 6 * m_uSampleRate;
 
-    const int channel_count = in_rFormat.GetNumChannels();
+    // setup the playback buffer
+    m_uPlaybackBufferSize = sizeof(AkReal32) * uMaxBufferSize * channel_count;
+    m_pPlaybackBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, m_uPlaybackBufferSize));
+    AkZeroMemLarge(m_pPlaybackBufferMemory, m_uPlaybackBufferSize);
 
-    m_pSpliceBuffer = new LinearMonoBuffer * [channel_count];
-    m_pPlaybackBuffer = new CircularMonoBuffer * [channel_count];
+    if (m_pPlaybackBufferMemory == nullptr)
+    {
+        return AK_InsufficientMemory;
+    }
+
+    m_PlaybackBuffer.AttachContiguousDeinterleavedData(m_pPlaybackBufferMemory, uMaxBufferSize, 0, in_rFormat.channelConfig);
+
+    // old, remove;
+    m_ppSpliceBuffer = new LinearMonoBuffer * [channel_count];
+    m_ppPlaybackBuffer = new CircularMonoBuffer * [channel_count];
 
 
     for (AkUInt32 i = 0; i < channel_count; i++)
     {
         const AkUInt32 uSpliceSampleSize = MonoBufferUtilities::ConvertMillisecondsToSamples(m_uSampleRate, 2.0f);
-        m_pSpliceBuffer[i] = new LinearMonoBuffer(uSpliceSampleSize);
-        m_pPlaybackBuffer[i] = new CircularMonoBuffer(uMaxBufferSize);
+        m_ppSpliceBuffer[i] = new LinearMonoBuffer(uSpliceSampleSize);
+        m_ppPlaybackBuffer[i] = new CircularMonoBuffer(uMaxBufferSize);
     }
 
 
+    // do we need the delay line?
     AkUInt32 sample_count = k_max_delay_seconds * m_uSampleRate;
-    AKRESULT result = m_delay.Init(in_pAllocator, sample_count, channel_count);
+    AKRESULT result = m_DelayMemory.Init(in_pAllocator, sample_count, channel_count);
 
     return result;
 }
 
 AKRESULT maggilizerFX::Term(AK::IAkPluginMemAlloc* in_pAllocator)
 {
-    // we are NOT responsible for freeing the cached params (and Wwise will crash if we do)
+    // we are NOT responsible for freeing the cached m_pParams (and Wwise will crash if we do)
     
-    m_delay.Term(in_pAllocator);
+    m_DelayMemory.Term(in_pAllocator);
 
     AK_PLUGIN_DELETE(in_pAllocator, this);
     return AK_Success;
@@ -95,7 +111,7 @@ AKRESULT maggilizerFX::Term(AK::IAkPluginMemAlloc* in_pAllocator)
 
 AKRESULT maggilizerFX::Reset()
 {
-    m_delay.Reset();
+    m_DelayMemory.Reset();
 
     return AK_Success;
 }
@@ -111,6 +127,10 @@ AKRESULT maggilizerFX::GetPluginInfo(AkPluginInfo& out_rPluginInfo)
 
 void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 {
+    // temp: this should factor in max delay, max splice, and recycle
+    const AkUInt32 maxTailSamples = (m_uSampleRate * 2.0f /*splice*/ * 2.0f /*delay*/ * (1 / MonoBufferUtilities::CalculateSpeed(m_pParams->m_rtpcs.fPitch))) * (1 + m_pParams->m_rtpcs.fRecycle);
+    m_TailHandler.HandleTail(io_pBuffer, m_uSampleRate * 3.0f);
+
     const AkUInt32 channel_count = io_pBuffer->NumChannels();
 
     AkUInt16 frames_processed;
@@ -123,8 +143,8 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
         {
             ProcessSingleFrame(
                 buffer,
-                m_pSpliceBuffer[channel_index],
-                m_pPlaybackBuffer[channel_index],
+                m_ppSpliceBuffer[channel_index],
+                m_ppPlaybackBuffer[channel_index],
                 frame_index,
                 m_pParams->m_rtpcs.bReverse,
                 m_pParams->m_rtpcs.fPitch,
@@ -133,7 +153,6 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
                 m_pParams->m_rtpcs.fRecycle,
                 m_pParams->m_rtpcs.fMix
             );
-
         }
     }
 }
@@ -153,13 +172,15 @@ void maggilizerFX::ProcessSingleFrame(
     float input = io_pBuffer[in_uFrame];
 
     // Delay
+    // TODO: this is wrong, it just delays the first splice playback
+    // Move this to the splice filled block and write the new splice into the playback buffer with the delay offset
     if (in_fDelay > 0)
     {
         const AkUInt32 delaySampleSize = MonoBufferUtilities::ConvertMillisecondsToSamples(m_uSampleRate, in_fDelay);
         io_pPlaybackBuffer->SetReadDelay(delaySampleSize);
     }
 
-    //Splice
+    // Splice
     if (io_pSpliceBuffer->IsFilled())
     {
         // Reverse 
