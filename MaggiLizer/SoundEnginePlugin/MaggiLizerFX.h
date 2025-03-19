@@ -34,6 +34,26 @@ the specific language governing permissions and limitations under the License.
 
 const int k_max_supported_channels = 1;
 
+struct Splice
+{
+    bool bReverse;
+    AkReal32 fPitch;
+    AkUInt32 uSize;
+    AkUInt32 uDelay;
+    AkReal32 fMix;
+    AkReal32 fRecycle;
+
+    AkUInt32 uWritePosition;
+    
+    AkReal32* pData;
+
+    void Reset() { uWritePosition = 0; }
+    bool IsEmpty() { return uWritePosition == 0; }
+    bool IsFull() { return uWritePosition == uSize; }
+    AkUInt32 FreeSpace() { return uSize - uWritePosition; }
+};
+
+
 /// See https://www.audiokinetic.com/library/edge/?source=SDK&id=soundengine__plugins__effects.html
 /// for the documentation about effect plug-ins
 class maggilizerFX
@@ -83,19 +103,23 @@ private:
     maggilizerFXParams* m_pParams;
     //AK::IAkEffectPluginContext* m_pContext;
 
+    AkUInt16 m_uChannelCount;
     AkUInt32 m_uSampleRate;
     LinearMonoBuffer** m_ppSpliceBuffer;
     CircularMonoBuffer** m_ppPlaybackBuffer;
 
     AkReal32* m_pSpliceBufferMemory;
     AkUInt32 m_uSpliceBufferSize;
-    AkAudioBuffer m_SpliceBuffer;
+    //AkAudioBuffer m_SpliceBuffer;
 
     AkReal32* m_pPlaybackBufferMemory;
     AkUInt32 m_uPlaybackBufferSize;
-    AkAudioBuffer m_PlaybackBuffer;
+    //AkAudioBuffer m_PlaybackBuffer;
 
-    AK::DSP::CAkDelayLineMemory<AkReal32> m_DelayMemory; // might not need?
+    // one splice per channel
+    Splice* m_pSplices;
+
+    //AK::DSP::CAkDelayLineMemory<AkReal32> m_DelayMemory; // might not need?
     AkFXTailHandler m_TailHandler;
 };
 
