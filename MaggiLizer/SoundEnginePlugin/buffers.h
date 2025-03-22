@@ -2,6 +2,8 @@
 #ifndef __BUFFERS_H__
 #define __BUFFERS_H__
 
+#include <AK/SoundEngine/Common/AkNumeralTypes.h>
+
 class MonoBuffer
 {
 public:
@@ -146,5 +148,66 @@ protected:
 	bool GetLastWrittenBufferBlock(const uint& in_uBlockSize, float* out_pBuffer);
 };
 
+// probably worth making this implement MonoBuffer after all
+class RingBuffer
+{
+public:
+	RingBuffer() :
+		m_uSize(0),
+		m_uReadPosition(0),
+		m_uWritePosition(0),
+		m_pData(nullptr) {}
+
+	~RingBuffer() {}
+
+	// We will never read up to or past the write, so this will always be true
+	// once write has started
+	bool HasData() const { return m_uReadPosition != m_uWritePosition; }
+
+	void AttachData(AkReal32* in_pData, AkUInt32 in_uSize) 
+	{ 
+		m_pData = in_pData;
+		m_uSize = in_uSize;
+	}
+
+	void Reset() 
+	{
+		m_uReadPosition = 0;
+		m_uWritePosition = 0;
+	}
+
+	/// <summary>
+	/// Copy input buffer at write position and advance write position
+	/// </summary>
+	void WriteBlock(const AkReal32* in_pData, const AkUInt32 in_uSize);
+
+	/// <summary>
+	/// Fill in_uSize block with silence at write position and advance write position
+	/// </summary>
+	void WriteSilentBlock(const AkUInt32 in_uSize);
+
+	/// <summary>
+	/// Advance write position by in_uSize without modifying the buffer
+	/// </summary>
+	void AdvanceWriteHead(const AkUInt32 in_uSize);
+
+	/// <summary>
+	/// Fill out_pData with in_uSize and advance read position
+	/// </summary>
+	void ReadBlock(AkReal32* out_pData, const AkUInt32 in_uSize);
+
+	/// <summary>
+	/// Fill out_pData with in_uSize without modifying read position
+	/// </summary>
+	void PeekLastWrittenBlock(AkReal32* out_pData, const AkUInt32 in_uSize) const;
+
+private:
+	friend class Splice;
+
+	AkUInt32 m_uSize;
+	AkUInt32 m_uReadPosition = 0;
+	AkUInt32 m_uWritePosition = 0;
+	AkReal32* m_pData;
+};
 
 #endif //!__BUFFERS_H__

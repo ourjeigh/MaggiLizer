@@ -28,99 +28,79 @@ the specific language governing permissions and limitations under the License.
 #define maggilizerFX_H
 
 #include "maggilizerFXParams.h"
-#include "AK/DSP/AkDelayLineMemory.h"
+//#include "AK/DSP/AkDelayLineMemory.h"
 #include "AK/Plugin/PluginServices/AkFXTailHandler.h"
 #include "buffers.h"
+#include "splice.h"
 
 const int k_max_supported_channels = 1;
-
-struct Splice
-{
-    bool bReverse;
-    AkReal32 fPitch;
-    AkUInt32 uSize;
-    AkUInt32 uDelay;
-    AkReal32 fMix;
-    AkReal32 fRecycle;
-
-    AkUInt32 uWritePosition;
-    
-    AkReal32* pData;
-
-    void Reset() { uWritePosition = 0; }
-    bool IsEmpty() { return uWritePosition == 0; }
-    bool IsFull() { return uWritePosition == uSize; }
-    AkUInt32 FreeSpace() { return uSize - uWritePosition; }
-};
-
 
 /// See https://www.audiokinetic.com/library/edge/?source=SDK&id=soundengine__plugins__effects.html
 /// for the documentation about effect plug-ins
 class maggilizerFX
-    : public AK::IAkInPlaceEffectPlugin
+	: public AK::IAkInPlaceEffectPlugin
 {
 public:
-    maggilizerFX();
-    ~maggilizerFX();
+	maggilizerFX();
+	~maggilizerFX();
 
-    /// Plug-in initialization.
-    /// Prepares the plug-in for data processing, allocates memory and sets up the initial conditions.
-    AKRESULT Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectPluginContext* in_pContext, AK::IAkPluginParam* in_pParams, AkAudioFormat& in_rFormat) override;
+	/// Plug-in initialization.
+	/// Prepares the plug-in for data processing, allocates memory and sets up the initial conditions.
+	AKRESULT Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectPluginContext* in_pContext, AK::IAkPluginParam* in_pParams, AkAudioFormat& in_rFormat) override;
 
-    /// Release the resources upon termination of the plug-in.
-    AKRESULT Term(AK::IAkPluginMemAlloc* in_pAllocator) override;
+	/// Release the resources upon termination of the plug-in.
+	AKRESULT Term(AK::IAkPluginMemAlloc* in_pAllocator) override;
 
-    /// The reset action should perform any actions required to reinitialize the
-    /// state of the plug-in to its original state (e.g. after Init() or on effect bypass).
-    AKRESULT Reset() override;
+	/// The reset action should perform any actions required to reinitialize the
+	/// state of the plug-in to its original state (e.g. after Init() or on effect bypass).
+	AKRESULT Reset() override;
 
-    /// Plug-in information query mechanism used when the sound engine requires
-    /// information about the plug-in to determine its behavior.
-    AKRESULT GetPluginInfo(AkPluginInfo& out_rPluginInfo) override;
+	/// Plug-in information query mechanism used when the sound engine requires
+	/// information about the plug-in to determine its behavior.
+	AKRESULT GetPluginInfo(AkPluginInfo& out_rPluginInfo) override;
 
-    /// Effect plug-in DSP execution.
-    void Execute(AkAudioBuffer* io_pBuffer) override;
+	/// Effect plug-in DSP execution.
+	void Execute(AkAudioBuffer* io_pBuffer) override;
 
-    /// Skips execution of some frames, when the voice is virtual playing from elapsed time.
-    /// This can be used to simulate processing that would have taken place (e.g. update internal state).
-    /// Return AK_DataReady or AK_NoMoreData, depending if there would be audio output or not at that point.
-    AKRESULT TimeSkip(AkUInt32 in_uFrames) override;
+	/// Skips execution of some frames, when the voice is virtual playing from elapsed time.
+	/// This can be used to simulate processing that would have taken place (e.g. update internal state).
+	/// Return AK_DataReady or AK_NoMoreData, depending if there would be audio output or not at that point.
+	AKRESULT TimeSkip(AkUInt32 in_uFrames) override;
 
 private:
-    void ProcessSingleFrame(
-        float* io_pBuffer,
-        MonoBuffer* io_pSpliceBuffer,
-        MonoBuffer* io_pPlaybackBuffer,
-        const AkUInt32& in_uFrame,
-        const bool& in_bReverse,
-        const float& in_fPitch,
-        const float& in_fSplice,
-        const float& in_fDelay,
-        const float& in_fRecycle,
-        const float& in_fMix);
+	void ProcessSingleFrame(
+		float* io_pBuffer,
+		MonoBuffer* io_pSpliceBuffer,
+		MonoBuffer* io_pPlaybackBuffer,
+		const AkUInt32& in_uFrame,
+		const bool& in_bReverse,
+		const float& in_fPitch,
+		const float& in_fSplice,
+		const float& in_fDelay,
+		const float& in_fRecycle,
+		const float& in_fMix);
 
-    // this pointer is guaranteed to be valid for the lifetime of the effect instance
-    maggilizerFXParams* m_pParams;
-    //AK::IAkEffectPluginContext* m_pContext;
+	// this pointer is guaranteed to be valid for the lifetime of the effect instance
+	maggilizerFXParams* m_pParams;
+	//AK::IAkEffectPluginContext* m_pContext;
 
-    AkUInt16 m_uChannelCount;
-    AkUInt32 m_uSampleRate;
-    LinearMonoBuffer** m_ppSpliceBuffer;
-    CircularMonoBuffer** m_ppPlaybackBuffer;
+	AkUInt16 m_uChannelCount;
+	AkUInt32 m_uSampleRate;
+	//LinearMonoBuffer** m_ppSpliceBuffer;
+	//CircularMonoBuffer** m_ppPlaybackBuffer;
 
-    AkReal32* m_pSpliceBufferMemory;
-    AkUInt32 m_uSpliceBufferSize;
-    //AkAudioBuffer m_SpliceBuffer;
+	AkReal32* m_pSpliceBufferMemory;
+	AkUInt32 m_uSpliceBufferSize;
 
-    AkReal32* m_pPlaybackBufferMemory;
-    AkUInt32 m_uPlaybackBufferSize;
-    //AkAudioBuffer m_PlaybackBuffer;
+	AkReal32* m_pPlaybackBufferMemory;
+	AkUInt32 m_uPlaybackBufferSize;
 
-    // one splice per channel
-    Splice* m_pSplices;
+	// one per channel
+	Splice* m_pSplices;
+	RingBuffer* m_pPlaybacks;
 
-    //AK::DSP::CAkDelayLineMemory<AkReal32> m_DelayMemory; // might not need?
-    AkFXTailHandler m_TailHandler;
+	//AK::DSP::CAkDelayLineMemory<AkReal32> m_DelayMemory; // might not need?
+	AkFXTailHandler m_TailHandler;
 };
 
 #endif // maggilizerFX_H

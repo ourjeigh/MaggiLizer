@@ -1,4 +1,5 @@
 #include "buffers.h"
+#include <AK/Tools/Common/AkPlatformFuncs.h>
 
 // --------------- Linear Buffer
 
@@ -229,4 +230,126 @@ bool CircularMonoBuffer::GetLastWrittenBufferBlock(const uint& in_uBlockSize, fl
 		iStartPosition %= m_uBufferSize;
 	}
 	return false;
+}
+
+
+// ------------------ RING BUFFER
+
+void RingBuffer::WriteBlock(const AkReal32* in_pData, const AkUInt32 in_uSize)
+{
+	AKASSERT(in_pData);
+	AKASSERT(in_uSize);
+
+	// Make sure we have enough room to write the full input
+	AKASSERT((m_uReadPosition - m_uWritePosition + m_uSize - 1) % m_uSize > in_uSize);
+
+	AkUInt32 uSpace = m_uSize - m_uWritePosition;
+	AkUInt32 ufirstBlockSize = AkMin(uSpace, in_uSize);
+
+	AKPLATFORM::AkMemCpy(&m_pData[m_uWritePosition], in_pData, sizeof(AkReal32) * ufirstBlockSize);
+
+	AkUInt32 uSecondBlockSize = in_uSize - ufirstBlockSize;
+	AKASSERT(uSecondBlockSize >= 0);
+
+	if (uSecondBlockSize)
+	{
+		// loop back to beginning
+		AKPLATFORM::AkMemCpy(m_pData, &in_pData[ufirstBlockSize], sizeof(AkReal32) * uSecondBlockSize);
+		m_uWritePosition = uSecondBlockSize;
+	}
+	else
+	{
+		m_uWritePosition += ufirstBlockSize;
+	}
+
+	AKASSERT(m_uWritePosition < m_uSize);
+}
+
+void RingBuffer::WriteSilentBlock(const AkUInt32 in_uSize)
+{
+	AKASSERT(in_uSize);
+
+	AkUInt32 uSpace = m_uSize - m_uWritePosition;
+	AkUInt32 ufirstBlockSize = AkMin(uSpace, in_uSize);
+
+	AkZeroMemLarge(&m_pData[m_uWritePosition], sizeof(AkReal32) * ufirstBlockSize);
+
+	AkUInt32 uSecondBlockSize = in_uSize - ufirstBlockSize;
+	AKASSERT(uSecondBlockSize >= 0);
+
+	if (uSecondBlockSize)
+	{
+		// loop back to beginning
+		AkZeroMemLarge(m_pData, sizeof(AkReal32) * uSecondBlockSize);
+		m_uWritePosition = uSecondBlockSize;
+	}
+	else
+	{
+		m_uWritePosition += ufirstBlockSize;
+	}
+
+	AKASSERT(m_uWritePosition < m_uSize);
+}
+
+void RingBuffer::AdvanceWriteHead(const AkUInt32 in_uSize)
+{
+	AKASSERT(in_uSize);
+
+	m_uWritePosition = (m_uWritePosition + in_uSize) % m_uSize;
+	AKASSERT(m_uWritePosition < m_uSize);
+}
+
+void RingBuffer::ReadBlock(AkReal32* out_pData, const AkUInt32 in_uSize)
+{
+	AKASSERT(out_pData);
+	AKASSERT(in_uSize);
+
+	// TBD If this should assert or just return that it didn't fill completely
+	AKASSERT((m_uWritePosition - m_uReadPosition + m_uSize) % m_uSize > in_uSize);
+	
+	AkUInt32 uSpace = m_uSize - m_uReadPosition;
+	AkUInt32 ufirstBlockSize = AkMin(uSpace, in_uSize);
+
+	AKPLATFORM::AkMemCpy(out_pData, &m_pData[m_uReadPosition], sizeof(AkReal32) * ufirstBlockSize);
+
+	AkUInt32 uSecondBlockSize = in_uSize - ufirstBlockSize;
+	AKASSERT(uSecondBlockSize >= 0);
+
+	if (uSecondBlockSize)
+	{
+		// loop back to beginning
+		AKPLATFORM::AkMemCpy(&out_pData[ufirstBlockSize], m_pData, sizeof(AkReal32) * uSecondBlockSize);
+		m_uReadPosition = uSecondBlockSize;
+	}
+	else
+	{
+		m_uReadPosition += ufirstBlockSize;
+	}
+
+	AKASSERT(m_uReadPosition < m_uSize);
+}
+
+void RingBuffer::PeekLastWrittenBlock(AkReal32* out_pData, const AkUInt32 in_uSize) const
+{
+	AKASSERT(out_pData);
+	AKASSERT(in_uSize);
+
+	AkUInt32 uStartPosition = (m_uWritePosition - in_uSize + m_uSize) % m_uSize;
+
+	// TBD If this should assert or just return that it didn't fill completely
+	AKASSERT((m_uWritePosition - uStartPosition + m_uSize) % m_uSize > in_uSize);
+
+	AkUInt32 uSpace = m_uSize - uStartPosition;
+	AkUInt32 ufirstBlockSize = AkMin(uSpace, in_uSize);
+
+	AKPLATFORM::AkMemCpy(out_pData, &m_pData[uStartPosition], sizeof(AkReal32) * ufirstBlockSize);
+
+	AkUInt32 uSecondBlockSize = in_uSize - ufirstBlockSize;
+	AKASSERT(uSecondBlockSize >= 0);
+
+	if (uSecondBlockSize)
+	{
+		// loop back to beginning
+		AKPLATFORM::AkMemCpy(&out_pData[ufirstBlockSize], m_pData, sizeof(AkReal32) * uSecondBlockSize);
+	}
 }
