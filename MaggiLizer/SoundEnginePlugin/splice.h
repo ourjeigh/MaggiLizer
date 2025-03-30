@@ -2,9 +2,10 @@
 #ifndef __SPLICE_H__
 #define __SPLICE_H__
 
+#include "buffers.h"
+
 #include <AK/SoundEngine/Common/AkNumeralTypes.h>
 #include <AK/Tools/Common/AkPlatformFuncs.h>
-#include "buffers.h"
 
 class Splice
 {
@@ -18,8 +19,8 @@ public:
 		bool bReverse,
 		AkReal32 fPitch,
 		AkUInt32 uSpliceSamples,
-		AkUInt32 uDelaySamples,
-		AkReal32 fMix,
+		//AkUInt32 uDelaySamples,
+		//AkReal32 fMix,
 		AkReal32 fRecycle);
 
 	void Reset() { m_uWritePosition = 0; }
@@ -28,8 +29,12 @@ public:
 	AkUInt32 FreeSpace() { return m_uSplice - m_uWritePosition; }
 	AkReal32* GetData() { return m_pData; }
 
+	void SetOutptReadPosition(AkUInt32 in_uPosition) { m_uOutputReadPosition = in_uPosition; }
+	AkUInt32 GetOutputReadPosition() { return m_uOutputReadPosition; }
+	//void AdvanceOutputReadPosition(AkUInt32 in_uSize);
+
 	void MixInBlock(AkReal32* in_pBuffer, AkUInt32 in_uSize);
-	AkUInt32 PushToBuffer(RingBuffer* out_pBuffer);
+	AkUInt32 PushToBuffer(RingBuffer& out_pBuffer, AkUInt16 uCrossfadeFrames);
 
 	bool HasNonZeroDataSlow()
 	{
@@ -49,15 +54,17 @@ public:
 		AkZeroMemLarge(m_pData, sizeof(AkReal32) * m_uSize);
 	}
 
+	AkUInt32 m_uWritePosition;
+	AkUInt32 m_uOutputReadPosition;
+
 private:
 	bool m_bReverse;
-	AkReal32 m_fPitch;
+	AkReal32 m_fSpeed;
 	AkUInt32 m_uSplice;
-	AkUInt32 m_uDelay;
-	AkReal32 m_fMix;
+	//AkUInt32 m_uDelay;
+	//AkReal32 m_fMix;
 	AkReal32 m_fRecycle;
 
-	AkUInt32 m_uWritePosition;
 
 	AkReal32* m_pData;
 	AkUInt32 m_uSize;

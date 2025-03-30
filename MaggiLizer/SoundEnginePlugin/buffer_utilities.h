@@ -1,0 +1,158 @@
+#pragma once
+#ifndef __BUFFER_UTILITIES_H__
+#define __BUFFER_UTILITIES_H__
+
+#include <AK/SoundEngine/Common/AkNumeralTypes.h>	
+
+/// <summary>
+/// Actual buffer size for iteration is based on splice value
+/// </summary>
+inline static AkUInt32 ConvertMillisecondsToSamples(const AkUInt32& in_uSampleRate, const AkReal32& in_fMilliseconds)
+{
+	return (in_fMilliseconds / 1000) * in_uSampleRate;
+}
+
+inline AkReal32 CalculateWetDryMix(const AkReal32& in_fDry, const AkReal32& in_fWet, const AkReal32 in_fMix)
+{
+	return (in_fDry) * (1 - in_fMix) + in_fWet * in_fMix;
+}
+
+inline void MixBufferBIntoA(AkReal32* in_pBufferA, const AkReal32* in_pBufferB, const AkUInt32& in_uSize, const AkReal32& in_fMix)
+{
+	for (AkUInt32 i = 0; i < in_uSize; i++)
+	{
+		CalculateWetDryMix(in_pBufferA[i], in_pBufferB[i], in_fMix);
+	}
+}
+
+/// <summary>
+/// Pitch change is just playback speed
+/// </summary>
+static AkReal32 CalculateSpeed(const AkReal32& in_fPitch)
+{
+	return pow(2, in_fPitch / 1200);
+}
+
+// old
+#if 0
+static class MonoBufferUtilities
+{
+	typedef unsigned int uint;
+
+private:
+	static void SwapBufferValues(float* a, float* b)
+	{
+		float temp = *a;
+		*a = *b;
+		*b = temp;
+	}
+
+public:
+
+	/// <summary>
+	/// Actual buffer size for iteration is based on splice value
+	/// </summary>
+	static uint ConvertMillisecondsToSamples(const uint& in_uSampleRate, const float& in_fMilliseconds)
+	{
+		// in_fSplice is in milliseconds, divide by 1000 to get seconds.
+		return (uint)(in_fMilliseconds / (float)1000 * in_uSampleRate);
+	}
+
+	/// <summary>
+	/// Pitch change is just playback speed
+	/// </summary>
+	static float CalculateSpeed(const float& in_fPitch)
+	{
+		return pow(2, in_fPitch / 1200);
+	}
+
+	static uint CalculateBufferSizeChangeFromSpeed(const uint& in_uBufferSize, const float& in_fSpeed)
+	{
+		return floor((float)in_uBufferSize / in_fSpeed);
+	}
+
+	static void ApplyReverseBufferSingle(MonoBuffer* io_pBuffer)
+	{
+		float* pointerLeft = io_pBuffer->m_pBuffer;
+		float* pointerRight = io_pBuffer->m_pBuffer + io_pBuffer->m_uBufferSize - 1;
+
+		while (pointerLeft < pointerRight)
+		{
+			SwapBufferValues(pointerLeft, pointerRight);
+			pointerLeft++;
+			pointerRight--;
+		}
+	}
+
+	static uint ApplySpeedBufferSingle(MonoBuffer* in_pBuffer, MonoBuffer* out_pBuffer, const float& in_fSpeed)
+	{
+		uint uOutWriteSize = CalculateBufferSizeChangeFromSpeed(in_pBuffer->m_uBufferSize, in_fSpeed);
+		const uint smoothWindowSize = 30;
+		float position = 0.0;
+		bool outBufferHadData = out_pBuffer->HasData();
+		for (uint i = 0; i < uOutWriteSize; i++)
+		{
+			// can't go past in_uBufferSize since that's the length of the input buffer.
+			if (position >= in_pBuffer->m_uBufferSize - 1)
+			{
+				// If we were to set position = 0 here it would start repeating the input signal for speeds > 1.
+				// This doesn't sound very good, so we just leave the rest of the buffer empty.
+				return i;
+			}
+
+			uint intPos = floor(position);
+			float floatPos = position - intPos;
+
+			float prev = in_pBuffer->m_pBuffer[intPos];
+			float next = in_pBuffer->m_pBuffer[intPos + 1];
+
+			float output = (1 - floatPos) * prev + (floatPos * next);
+			if (outBufferHadData && i < smoothWindowSize)
+			{
+				const float weight = ((float)i / (float)smoothWindowSize);
+				output = CalculateWetDryMix(out_pBuffer->m_pBuffer[out_pBuffer->m_uBufferWritePosition], output, weight);
+			}
+			out_pBuffer->WriteNextBufferValue(output);
+
+			position += in_fSpeed;
+		}
+		return uOutWriteSize;
+	}
+
+	/// <summary>
+	/// out_pBuffer size MUST be at least in_uBufferSize or larger
+	/// </summary>
+	static bool CopyMonoBuffer(MonoBuffer* in_pBuffer, MonoBuffer* out_pBuffer, const uint& in_uBufferSize)
+	{
+		if (out_pBuffer->m_uBufferSize < in_uBufferSize) return false;
+
+		return out_pBuffer->PrefillBuffer(in_pBuffer->m_pBuffer, in_uBufferSize);
+	}
+
+	static bool CopyLastWrittenBufferBlock(MonoBuffer* in_pBuffer, MonoBuffer* out_pBuffer, const uint& in_uBlockSize)
+	{
+		float* pBufferBlock = new float[in_uBlockSize];
+		in_pBuffer->GetLastWrittenBufferBlock(in_uBlockSize, pBufferBlock);
+		out_pBuffer->PrefillBuffer(pBufferBlock, in_uBlockSize);
+		return true;
+	}
+
+	static float CalculateWetDryMix(const float& in_fDry, const float& in_fWet, const float in_fMix)
+	{
+		return (in_fDry) * (1 - in_fMix) + in_fWet * in_fMix;
+	}
+
+	static void ApplySmoothingAtIndex(MonoBuffer* io_pBuffer, const uint& in_uPosition, const uint& in_uSmoothWindowSize)
+	{
+		const float fStartValue = io_pBuffer->m_pBuffer[in_uPosition];
+		for (uint i = 0; i < in_uSmoothWindowSize; i++)
+		{
+			const float weight = ((float)i / (float)in_uSmoothWindowSize);
+			const float smoothedValue = MonoBufferUtilities::CalculateWetDryMix(fStartValue, io_pBuffer->m_pBuffer[in_uPosition + i], weight);
+			io_pBuffer->m_pBuffer[in_uPosition + i] = smoothedValue;
+		}
+	}
+};
+#endif // 0
+
+#endif // !__BUFFER_UTILITIES_H__

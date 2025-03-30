@@ -58,4 +58,16 @@ ADD_AUDIOPLUGIN_CLASS_TO_CONTAINER(                                             
 );
 DEFINE_PLUGIN_REGISTER_HOOK
 
+#ifdef _DEBUG
+#define DEFINEDUMMYASSERTHOOK void AkAssertHookFunc( \
+    const char* in_pszExpression,\
+    const char* in_pszFileName,\
+    int in_lineNumber)\
+    {\
+    __debugbreak();\
+    __halt();\
+    }\
+    AkAssertHook g_pAssertHook = AkAssertHookFunc;
+#endif // _DEBUG
+
 DEFINEDUMMYASSERTHOOK;							// Placeholder assert hook for Wwise plug-ins using AKASSERT (cassert used by default)

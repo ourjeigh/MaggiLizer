@@ -4,6 +4,8 @@
 
 #include <AK/SoundEngine/Common/AkNumeralTypes.h>
 
+// old
+#if 0 
 class MonoBuffer
 {
 public:
@@ -148,7 +150,8 @@ protected:
 	bool GetLastWrittenBufferBlock(const uint& in_uBlockSize, float* out_pBuffer);
 };
 
-// probably worth making this implement MonoBuffer after all
+#endif // 0
+
 class RingBuffer
 {
 public:
@@ -195,14 +198,24 @@ public:
 	/// Fill out_pData with in_uSize and advance read position
 	/// </summary>
 	void ReadBlock(AkReal32* out_pData, const AkUInt32 in_uSize);
+	
+	void PeekReadBlock(AkReal32* out_pData, const AkUInt32 in_uSize) const;
+
+	/// <summary>
+	/// Fill out_pData with in_uSize from a provided read position, not advancing read tracking.
+	/// Returns new read position.
+	/// </summary>
+	AkUInt32 PeekBlock(AkReal32* out_pData, const AkUInt32 in_uSize, const AkUInt32 in_uReadPosition) const;
 
 	/// <summary>
 	/// Fill out_pData with in_uSize without modifying read position
 	/// </summary>
-	void PeekLastWrittenBlock(AkReal32* out_pData, const AkUInt32 in_uSize) const;
+	//void PeekLastWrittenBlock(AkReal32* out_pData, const AkUInt32 in_uSize) const;
 
 private:
 	friend class Splice;
+
+	void ReadBlockInternal(AkReal32* out_pData, const AkUInt32 in_uSize, AkUInt32& inout_uReadPosition) const;
 
 	AkUInt32 m_uSize;
 	AkUInt32 m_uReadPosition = 0;

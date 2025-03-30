@@ -68,6 +68,8 @@ public:
 	AKRESULT TimeSkip(AkUInt32 in_uFrames) override;
 
 private:
+
+#if 0
 	void ProcessSingleFrame(
 		float* io_pBuffer,
 		MonoBuffer* io_pSpliceBuffer,
@@ -79,15 +81,13 @@ private:
 		const float& in_fDelay,
 		const float& in_fRecycle,
 		const float& in_fMix);
+#endif
 
 	// this pointer is guaranteed to be valid for the lifetime of the effect instance
 	maggilizerFXParams* m_pParams;
-	//AK::IAkEffectPluginContext* m_pContext;
 
 	AkUInt16 m_uChannelCount;
 	AkUInt32 m_uSampleRate;
-	//LinearMonoBuffer** m_ppSpliceBuffer;
-	//CircularMonoBuffer** m_ppPlaybackBuffer;
 
 	AkReal32* m_pSpliceBufferMemory;
 	AkUInt32 m_uSpliceBufferSize;
@@ -99,8 +99,8 @@ private:
 	Splice* m_pSplices;
 	RingBuffer* m_pPlaybacks;
 
-	//AK::DSP::CAkDelayLineMemory<AkReal32> m_DelayMemory; // might not need?
 	AkFXTailHandler m_TailHandler;
+	AkUInt32 m_uTailPosition;
 };
 
 #endif // maggilizerFX_H
