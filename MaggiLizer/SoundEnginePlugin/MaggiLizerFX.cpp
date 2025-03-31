@@ -93,6 +93,7 @@ AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
 
 	if (m_pPlaybackBufferMemory == nullptr ||
 		m_pSpliceBufferMemory == nullptr ||
+		m_pScratchBuffer == nullptr ||
 		m_pSplices == nullptr ||
 		m_pPlaybacks == nullptr)
 	{
@@ -122,12 +123,14 @@ AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
 AKRESULT maggilizerFX::Term(AK::IAkPluginMemAlloc* in_pAllocator)
 {
 	// we are NOT responsible for freeing the cached m_pParams (and Wwise will crash if we do)
+
 	m_pParams = nullptr;
 
 	AK_PLUGIN_FREE(in_pAllocator, m_pSplices);
 	AK_PLUGIN_FREE(in_pAllocator, m_pPlaybacks);
 	AK_PLUGIN_FREE(in_pAllocator, m_pPlaybackBufferMemory);
 	AK_PLUGIN_FREE(in_pAllocator, m_pSpliceBufferMemory);
+	AK_PLUGIN_FREE(in_pAllocator, m_pScratchBuffer);
 
 	AK_PLUGIN_DELETE(in_pAllocator, this);
 
