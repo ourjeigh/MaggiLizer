@@ -9,13 +9,14 @@ Build/
 
 # Wwise Project
 .backup*
-.cache*
 *.akd
 *.prof
 *.validationcache
 *.wsettings
 AkWwiseProjectData.asset
 IncrementalSoundBankData.xml
+*.mdb
+
 
 ### Archives ###
 # It's better to unpack these files and commit the raw source because
@@ -367,8 +368,6 @@ _pkginfo.txt
 # Visual Studio cache files
 # files ending in .cache can be ignored
 *.[Cc]ache
-# but keep track of directories ending in .cache
-!*.[Cc]ache/
 
 # Others
 ClientBin/
