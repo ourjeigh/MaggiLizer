@@ -1236,15 +1236,15 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="buffers.h" />
-    <ClInclude Include="buffer_utilities.h" />
+    <ClInclude Include="ring_buffer.h" />
+    <ClInclude Include="utilities.h" />
     <ClInclude Include="maggilizerFX.h" />
     <ClInclude Include="maggilizerFXFactory.h" />
     <ClInclude Include="maggilizerFXParams.h" />
     <ClInclude Include="splice.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="buffers.cpp" />
+    <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="maggilizerFX.cpp" />
     <ClCompile Include="maggilizerFXParams.cpp" />
     <ClCompile Include="splice.cpp" />

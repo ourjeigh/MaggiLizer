@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../SoundEnginePlugin/buffer_utilities.h"
+#include "../SoundEnginePlugin/utilities.h"
 
 TEST(Utilities, ConvertMillisecondsToSamples)
 {

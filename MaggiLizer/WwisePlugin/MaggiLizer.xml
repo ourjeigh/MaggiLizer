@@ -65,27 +65,27 @@ for the documentation about the plugin xml format
 					<ValueRestriction>
 						<Range Type="Real32">
 							<Min>0</Min>
-							<Max>2000</Max>
+							<Max>1000</Max>
 						</Range>
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
 			<Property Name="delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
 				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
-				<DefaultValue>250.0</DefaultValue>
+				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>3</AudioEnginePropertyID>
 				<Restrictions>
 					<ValueRestriction>
 						<Range Type="Real32">
 							<Min>0</Min>
-							<Max>2000</Max>
+							<Max>500</Max>
 						</Range>
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
 			<Property Name="recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
-				<DefaultValue>21.0</DefaultValue>
+				<DefaultValue>25.0</DefaultValue>
 				<AudioEnginePropertyID>4</AudioEnginePropertyID>
 				<Restrictions>
 					<ValueRestriction>
@@ -98,7 +98,7 @@ for the documentation about the plugin xml format
 			</Property>
 			<Property Name="mix" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Mix">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
-				<DefaultValue>50.0</DefaultValue>
+				<DefaultValue>100.0</DefaultValue>
 				<AudioEnginePropertyID>5</AudioEnginePropertyID>
 				<Restrictions>
 					<ValueRestriction>

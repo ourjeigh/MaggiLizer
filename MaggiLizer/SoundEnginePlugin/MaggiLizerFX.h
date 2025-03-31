@@ -30,7 +30,7 @@ the specific language governing permissions and limitations under the License.
 #include "maggilizerFXParams.h"
 //#include "AK/DSP/AkDelayLineMemory.h"
 #include "AK/Plugin/PluginServices/AkFXTailHandler.h"
-#include "buffers.h"
+#include "ring_buffer.h"
 #include "splice.h"
 
 const int k_max_supported_channels = 1;
@@ -69,25 +69,12 @@ public:
 
 private:
 
-#if 0
-	void ProcessSingleFrame(
-		float* io_pBuffer,
-		MonoBuffer* io_pSpliceBuffer,
-		MonoBuffer* io_pPlaybackBuffer,
-		const AkUInt32& in_uFrame,
-		const bool& in_bReverse,
-		const float& in_fPitch,
-		const float& in_fSplice,
-		const float& in_fDelay,
-		const float& in_fRecycle,
-		const float& in_fMix);
-#endif
-
 	// this pointer is guaranteed to be valid for the lifetime of the effect instance
 	maggilizerFXParams* m_pParams;
 
 	AkUInt16 m_uChannelCount;
 	AkUInt32 m_uSampleRate;
+	AkUInt32 m_uSamplesPerFrame;
 
 	AkReal32* m_pSpliceBufferMemory;
 	AkUInt32 m_uSpliceBufferSize;
@@ -95,10 +82,14 @@ private:
 	AkReal32* m_pPlaybackBufferMemory;
 	AkUInt32 m_uPlaybackBufferSize;
 
+	// small buffer for mixing input and playback buffers within Execute
+	AkReal32* m_pScratchBuffer;
+
 	// one per channel
 	Splice* m_pSplices;
 	RingBuffer* m_pPlaybacks;
 
+	// responsible for creating valid frames once input is finished to allow for delay/recycle tail
 	AkFXTailHandler m_TailHandler;
 	AkUInt32 m_uTailPosition;
 };
