@@ -40,6 +40,7 @@ enum e_param_ids
     param_id_delay,
     param_id_recycle,
     param_id_mix,
+    param_id_smoothing,
 
     k_param_id_count
 };
@@ -52,6 +53,7 @@ struct maggilizerRTPCParams
     AkReal32 fDelay;
     AkReal32 fRecycle;
     AkReal32 fMix;
+	AkReal32 fSmoothing;
 
     void clear()
     {
@@ -61,6 +63,7 @@ struct maggilizerRTPCParams
         fDelay = 0.0f;
         fRecycle = 0.0f;
         fMix = 0.0f;
+		fSmoothing = 0.0f;
     }
 };
 

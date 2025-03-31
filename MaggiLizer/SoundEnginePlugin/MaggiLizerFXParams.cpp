@@ -79,6 +79,7 @@ AKRESULT maggilizerFXParams::SetParamsBlock(const void* in_pParamsBlock, AkUInt3
     m_rtpcs.fDelay = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
     m_rtpcs.fRecycle = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) / 100.0f;
     m_rtpcs.fMix = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) / 100.0f; 
+	m_rtpcs.fSmoothing = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) / 100.0f;
     CHECKBANKDATASIZE(in_ulBlockSize, eResult);
     m_paramChangeHandler.SetAllParamChanges();
 
@@ -101,8 +102,6 @@ AKRESULT maggilizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
         m_paramChangeHandler.SetParamChange(param_id_pitch);
         break;
     case param_id_delay:
-        // TODO: Implement Delay
-        // -- issue https://github.com/rjmattingly/MaggiLizer/projects/1#card-49020915
         m_rtpcs.fDelay = *static_cast<const AkReal32*>(in_pValue);
         m_paramChangeHandler.SetParamChange(param_id_delay);
         break;
@@ -117,6 +116,10 @@ AKRESULT maggilizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in
     case param_id_mix:
         m_rtpcs.fMix = *static_cast<const AkReal32*>(in_pValue) / 100.0f; // convert from 0-100% to 0-1
         m_paramChangeHandler.SetParamChange(param_id_mix);
+        break;
+    case param_id_smoothing:
+        m_rtpcs.fSmoothing = *static_cast<const AkReal32*>(in_pValue) / 100.0f; // convert from 0-100% to 0-1
+        m_paramChangeHandler.SetParamChange(param_id_smoothing);
         break;
     default:
         eResult = AK_InvalidParameter;

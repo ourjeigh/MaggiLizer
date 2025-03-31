@@ -4,12 +4,15 @@
 #include "utilities.h"
 #include <AK/Tools/Win32/AkPlatformFuncs.h>
 
+const AkReal32 k_max_smoothing_ratio = 0.25f;
+
 Splice::Splice() :
 	m_bReverse(false),
 	m_fSpeed(0.0f),
 	m_uSize(0),
 	m_uSplice(0),
 	m_fRecycle(0.0f),
+	m_uSmoothingFrames(0),
 	m_uWritePosition(0),
 	m_uOutputReadPosition(0),
 	m_pData(nullptr)
@@ -28,20 +31,23 @@ void Splice::AttachData(AkReal32* in_pData, AkUInt32 in_uSize)
 
 void Splice::UpdateSettings(
 	bool bReverse,
-	AkReal32 fPitch,
+	AkReal32 fSpeed,
 	AkUInt32 uSplice,
-	AkReal32 fRecycle)
+	AkReal32 fRecycle,
+	AkReal32 fSmoothing)
 {
+	AKASSERT(uSplice);
+
 	m_bReverse = bReverse;
-	m_fSpeed = fPitch;
+	m_fSpeed = fSpeed;
 	m_uSplice = uSplice;
 	m_fRecycle = fRecycle;
+	m_uSmoothingFrames = uSplice * k_max_smoothing_ratio * fSmoothing * AkMin(1, 1/fSpeed);
 }
 
 void Splice::MixInBlock(AkReal32* in_pInputBuffer, AkReal32* in_pRecycleBuffer, AkUInt32 in_uSize)
 {
 	AkUInt32 uSamplesProcessed = 0;
-	//while (uSamplesProcessed <= in_uSize && m_uWritePosition < m_uSplice)
 	while (uSamplesProcessed < in_uSize && m_uWritePosition < m_uSplice)
 	{
 		// todo: make this simd
@@ -58,7 +64,7 @@ void Splice::MixInBlock(AkReal32* in_pInputBuffer, AkReal32* in_pRecycleBuffer, 
 	}
 }
 
-AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, AkUInt16 uCrossfadeFrames)
+AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing)
 {
 	// If speed is less than one we would generate more samples than we have in the splice buffer
 	const AkUInt32 uFramesToWrite = AkMin(static_cast<AkReal32>(m_uSplice) / m_fSpeed, m_uSplice);
@@ -69,8 +75,8 @@ AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, AkUInt16 uCrossfadeFrames
 
 	while (uFramesWritten < uFramesToWrite)
 	{
-		AKASSERT(fReadPosition < m_uSize);
-		AKASSERT(fReadPosition >= 0);
+		AKASSERT(m_bReverse ||fReadPosition <= m_uSize - 1);
+		AKASSERT(!m_bReverse || fReadPosition >= -1.0f);
 
 		AkUInt32 uReadPosition = m_bReverse ? ceil(fReadPosition) : fReadPosition;
 		AkReal32 fDelta = fabs(fReadPosition - uReadPosition);
@@ -82,17 +88,17 @@ AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, AkUInt16 uCrossfadeFrames
 		{
 			next = m_pData[uReadPosition + iDirection];
 		}
-
+		 
 		AkReal32 fOutput = (1 - fDelta) * curr + (fDelta * next);
 
-		if (uFramesWritten < uCrossfadeFrames)
+		if (uFramesWritten < m_uSmoothingFrames)
 		{
-			AkReal32 weight = static_cast<AkReal32>(uFramesWritten) / uCrossfadeFrames;
+			AkReal32 weight = static_cast<AkReal32>(uFramesWritten) / m_uSmoothingFrames;
 			fOutput = CalculateWetDryMix(out_pBuffer.m_pData[out_pBuffer.m_uWritePosition], fOutput, weight);
 		}
-		else if (uFramesToWrite - uFramesWritten <= uCrossfadeFrames)
+		else if (uFramesToWrite - uFramesWritten <= m_uSmoothingFrames)
 		{
-			AkReal32 weight = static_cast<AkReal32>(uFramesToWrite - uFramesWritten - 1) / uCrossfadeFrames;
+			AkReal32 weight = static_cast<AkReal32>(uFramesToWrite - uFramesWritten - 1) / m_uSmoothingFrames;
 			fOutput = CalculateWetDryMix(out_pBuffer.m_pData[out_pBuffer.m_uWritePosition], fOutput, weight);
 		}
 

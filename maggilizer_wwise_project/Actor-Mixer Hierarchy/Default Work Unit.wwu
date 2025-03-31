@@ -31,10 +31,11 @@
 												<Custom>
 													<Effect Name="MaggiLizer (Custom)" ID="{350D5583-DCB7-4FFE-840D-39B75690664C}" ShortID="41530067" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
 														<PropertyList>
-															<Property Name="delay" Type="Real32" Value="250"/>
-															<Property Name="mix" Type="Real32" Value="50"/>
-															<Property Name="recycle" Type="Real32" Value="21"/>
-															<Property Name="splice" Type="Real32" Value="250"/>
+															<Property Name="pitch" Type="Real32" Value="375"/>
+															<Property Name="recycle" Type="Real32" Value="91"/>
+															<Property Name="reverse" Type="bool" Value="True"/>
+															<Property Name="smoothing" Type="Real32" Value="100"/>
+															<Property Name="splice" Type="Real32" Value="850"/>
 														</PropertyList>
 													</Effect>
 												</Custom>
@@ -71,16 +72,17 @@
 						<ObjectList Name="Effects">
 							<Reference>
 								<Local>
-									<EffectSlot Name="" ID="{A90C5030-88D9-4AF9-B092-98CF234AD3C3}" ShortID="33543537">
+									<EffectSlot Name="" ID="{E807F041-EE69-47AD-9B08-386A0447B33F}" ShortID="91582397">
 										<ReferenceList>
 											<Reference Name="Effect">
 												<Custom>
-													<Effect Name="MaggiLizer (Custom)" ID="{41D0FD29-7344-4705-AC8A-1F466A6ACF7D}" ShortID="275604185" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
+													<Effect Name="MaggiLizer (Custom)" ID="{3BE5726B-BEBC-4368-AA5B-CCCB9A3D6E20}" ShortID="747916829" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
 														<PropertyList>
-															<Property Name="delay" Type="Real32" Value="210"/>
-															<Property Name="pitch" Type="Real32" Value="-400"/>
-															<Property Name="recycle" Type="Real32" Value="91"/>
-															<Property Name="splice" Type="Real32" Value="320"/>
+															<Property Name="delay" Type="Real32" Value="20"/>
+															<Property Name="pitch" Type="Real32" Value="-100"/>
+															<Property Name="recycle" Type="Real32" Value="81"/>
+															<Property Name="smoothing" Type="Real32" Value="0"/>
+															<Property Name="splice" Type="Real32" Value="120"/>
 														</PropertyList>
 													</Effect>
 												</Custom>

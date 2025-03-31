@@ -9245,6 +9245,11 @@
 								<Value>False</Value>
 							</ValueList>
 						</Property>
+						<Property Name="smoothing" Type="Real32">
+							<ValueList>
+								<Value>50</Value>
+							</ValueList>
+						</Property>
 						<Property Name="splice" Type="Real32">
 							<ValueList>
 								<Value>0</Value>

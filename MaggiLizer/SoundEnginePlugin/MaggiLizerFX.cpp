@@ -174,6 +174,7 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 	const AkReal32 fDelay = m_pParams->m_rtpcs.fDelay;
 	const AkReal32 fRecycle = m_pParams->m_rtpcs.fRecycle;
 	const AkReal32 fMix = m_pParams->m_rtpcs.fMix;
+	const AkReal32 fSmoothing = m_pParams->m_rtpcs.fSmoothing;
 
 	const AkReal32 fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
 	const AkUInt32 uSpliceSize = ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice);// +k_crossfade_frames * 2;
@@ -207,7 +208,8 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 				bReverse,
 				fSpeed,
 				uSpliceSize,
-				fRecycle);
+				fRecycle,
+				fSmoothing);
 		}
 
 		if (pPlayback->HasData())
@@ -227,12 +229,26 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 		if (pSplice->IsFull())
 		{
 			// handle delay by advancing the write position by the delay amount before writing splice data in
-			pPlayback->AdvanceWriteHead(uDelaySize);
+			//pPlayback->AdvanceWriteHead(uDelaySize);
+			if (uDelaySize > 0)
+			{
+				pPlayback->WriteSilentBlock(uDelaySize);
+				pPlayback->BacktrackWriteHead(pSplice->GetSmoothingFrames());
+			}
 
 			// write the processed splice into the playback buffer
-			const AkUInt16 uCrossfadeFrames = pPlayback->HasData() ? 0 : k_crossfade_frames;
-			pSplice->PushToBuffer(*pPlayback, uCrossfadeFrames);
+
+			// TODO: we want this to be an interpololation of fSmoothing * (something like) spliceSize / 4
+			// but we want to use the splice's current splicesize, not necessarily the (new) one currently in params
+			// could possibly just have PushToBuffer return how many frames it crossfaded, so we can BacktrackWriteHead that amount
+			//const AkUInt16 uCrossfadeFrames = pPlayback->HasData() ? pSplice->GetSmoothingFrames() : 0 ; //temp
+			pSplice->PushToBuffer(*pPlayback, pPlayback->HasData());
 			
+			AKASSERT(pPlayback->HasData());
+			
+			// TODO: need to make sure that as fSmoothing grows, we don't allow the read head to catch up to the write head
+			pPlayback->BacktrackWriteHead(pSplice->GetSmoothingFrames());
+
 			pSplice->Reset();
 		}
 
@@ -244,7 +260,8 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 				bReverse,
 				fSpeed,
 				uSpliceSize,
-				fRecycle);
+				fRecycle,
+				fSmoothing);
 
 			// write remaining input to splice
 			pSplice->MixInBlock(pBuffer, &m_pScratchBuffer[uFirstSpliceSamplesToWrite], uRemainingSpliceSamplesToWrite);
