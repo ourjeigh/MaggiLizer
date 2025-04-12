@@ -33,7 +33,7 @@ the specific language governing permissions and limitations under the License.
 
 typedef AkReal32* AK_RESTRICT AKReal32_Restrict;
 
-const AkReal32 k_playback_buffer_seconds = 2.5f;
+const AkReal32 k_playback_buffer_seconds = 5.0f;
 const AkReal32 k_max_splice_buffer_seconds = 1.0f;
 const AkUInt16 k_crossfade_frames = 256; // 1024; // this is good down to ~40Hz so we may need to add HPF
 
@@ -57,6 +57,8 @@ maggilizerFX::maggilizerFX() :
 	m_uSpliceBufferSize(0),
 	m_pPlaybackBufferMemory(nullptr),
 	m_uPlaybackBufferSize(0),
+	m_pScratchBuffer(nullptr),
+	m_uSamplesPerFrame(0),
 	m_pSplices(nullptr),
 	m_pPlaybacks(nullptr),
 	m_uTailPosition(0)
@@ -73,18 +75,20 @@ AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
 	m_uSampleRate = in_rFormat.uSampleRate;
 	m_uChannelCount = in_rFormat.GetNumChannels();
 
-	// allocate buffer memories
-	const AkUInt32 uPlaybackBufferSize = k_playback_buffer_seconds * m_uSampleRate * m_uChannelCount;
-	m_uPlaybackBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uPlaybackBufferSize, in_rFormat.GetBlockAlign());
-	m_pPlaybackBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uPlaybackBufferSize));
-
-	const AkUInt32 uSpliceBufferSize = (k_max_splice_buffer_seconds * m_uSampleRate + k_crossfade_frames * 2) * m_uChannelCount;
-	m_uSpliceBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uSpliceBufferSize, in_rFormat.GetBlockAlign());
-	m_pSpliceBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSpliceBufferSize));
-
 	AkAudioSettings audioSettings;
 	in_pContext->GlobalContext()->GetAudioSettings(audioSettings);
 	m_uSamplesPerFrame = audioSettings.uNumSamplesPerFrame;
+
+	// allocate buffer memories
+	const AkUInt32 uPlaybackBufferSize = k_playback_buffer_seconds * m_uSampleRate * m_uChannelCount;
+	m_uPlaybackBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uPlaybackBufferSize, m_uSamplesPerFrame);
+	m_pPlaybackBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uPlaybackBufferSize));
+
+	const AkUInt32 uSpliceBufferSize = (k_max_splice_buffer_seconds * m_uSampleRate + k_crossfade_frames * 2) * m_uChannelCount;
+	m_uSpliceBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uSpliceBufferSize, m_uSamplesPerFrame);
+	m_pSpliceBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSpliceBufferSize));
+
+	
 	m_pScratchBuffer = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSamplesPerFrame));
 
 	// allocate containers
@@ -177,8 +181,9 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 	const AkReal32 fSmoothing = m_pParams->m_rtpcs.fSmoothing;
 
 	const AkReal32 fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
-	const AkUInt32 uSpliceSize = ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice);// +k_crossfade_frames * 2;
-	const AkUInt32 uDelaySize = ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay);
+	
+	const AkUInt32 uSpliceSize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);// +k_crossfade_frames * 2;
+	const AkUInt32 uDelaySize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay), m_uSamplesPerFrame);
 
 	// Update Tail Handler
 	const AkUInt32 uMaxTailSamples = ((m_uSampleRate * k_max_splice_buffer_seconds)) * (1 + 4 * m_pParams->m_rtpcs.fRecycle);
@@ -202,76 +207,86 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 		Splice* pSplice = &m_pSplices[uChannelndex];
 		RingBuffer* pPlayback = &m_pPlaybacks[uChannelndex];
 
-		if (pSplice->IsEmpty())
+		ProcessChannel(
+			pBuffer,
+			uBufferSize,
+			pSplice,
+			pPlayback,
+			bReverse,
+			fSpeed,
+			uSpliceSize,
+			uDelaySize,
+			fRecycle,
+			fSmoothing,
+			fMix,
+			fTailMix);
+	}
+}
+
+inline void maggilizerFX::ProcessChannel(
+	AkReal32* pBuffer,
+	const AkUInt32 uBufferSize,
+	Splice* pSplice,
+	RingBuffer* pPlayback,
+	const bool bReverse,
+	const AkReal32 fSpeed,
+	const AkUInt32 uSpliceSize,
+	const AkUInt32 uDelaySize,
+	const AkReal32 fRecycle,
+	const AkReal32 fSmoothing,
+	const AkReal32 fMix,
+	const AkReal32 fTailMix)
+{
+	if (pSplice->IsEmpty())
+	{
+		pSplice->UpdateSettings(
+			bReverse,
+			fSpeed,
+			uSpliceSize,
+			fRecycle,
+			fSmoothing);
+	}
+
+	if (pPlayback->HasData())
+	{
+		// read playback into the scratch buffer
+		pPlayback->ReadBlock(m_pScratchBuffer, uBufferSize);
+	}
+
+	// trying to get it so that we can write the splice data in the playback buffer's read position
+	// so that we can crossfade. Not sure if it actually can work...
+	if (pSplice->IsFull() || pSplice->FreeSpace() <= pSplice->GetSmoothingFrames())
+	{
+		// handle delay by advancing the write position by the delay amount before writing splice data in
+		if (uDelaySize > 0)
 		{
-			pSplice->UpdateSettings(
-				bReverse,
-				fSpeed,
-				uSpliceSize,
-				fRecycle,
-				fSmoothing);
+			//pPlayback->WriteSilentBlock(uDelaySize);
 		}
 
-		if (pPlayback->HasData())
-		{
-			// read playback into the scratch buffer
-			pPlayback->ReadBlock(m_pScratchBuffer, uBufferSize);
-		}
+		// write the processed splice into the playback buffer
+		pSplice->PushToBuffer(*pPlayback, pPlayback->HasData());
 
-		AkUInt32 uFirstSpliceSamplesToWrite = AkMin(uBufferSize, pSplice->FreeSpace());
+		AKASSERT(pPlayback->HasData()); 
 
-		if (uFirstSpliceSamplesToWrite > 0)
-		{
-			// mix input to splice, combined with the scratch buffer for recycle from playback 
-			pSplice->MixInBlock(pBuffer, m_pScratchBuffer, uFirstSpliceSamplesToWrite);
-		}
+		//pPlayback->BacktrackWriteHead(pSplice->GetSmoothingFrames());
 
-		if (pSplice->IsFull())
-		{
-			// handle delay by advancing the write position by the delay amount before writing splice data in
-			//pPlayback->AdvanceWriteHead(uDelaySize);
-			if (uDelaySize > 0)
-			{
-				pPlayback->WriteSilentBlock(uDelaySize);
-				pPlayback->BacktrackWriteHead(pSplice->GetSmoothingFrames());
-			}
+		pSplice->Reset();
+		pSplice->UpdateSettings(
+			bReverse,
+			fSpeed,
+			uSpliceSize,
+			fRecycle,
+			fSmoothing);
+	}
 
-			// write the processed splice into the playback buffer
+	// we align splice size to uBufferSize so we should always be able to fit an entire block
+	AKASSERT(pSplice->FreeSpace() >= uBufferSize);
+	pSplice->MixInBlock(pBuffer, m_pScratchBuffer, uBufferSize);
 
-			// TODO: we want this to be an interpololation of fSmoothing * (something like) spliceSize / 4
-			// but we want to use the splice's current splicesize, not necessarily the (new) one currently in params
-			// could possibly just have PushToBuffer return how many frames it crossfaded, so we can BacktrackWriteHead that amount
-			//const AkUInt16 uCrossfadeFrames = pPlayback->HasData() ? pSplice->GetSmoothingFrames() : 0 ; //temp
-			pSplice->PushToBuffer(*pPlayback, pPlayback->HasData());
-			
-			AKASSERT(pPlayback->HasData());
-			
-			// TODO: need to make sure that as fSmoothing grows, we don't allow the read head to catch up to the write head
-			pPlayback->BacktrackWriteHead(pSplice->GetSmoothingFrames());
-
-			pSplice->Reset();
-		}
-
-		AkUInt32 uRemainingSpliceSamplesToWrite = uBufferSize - uFirstSpliceSamplesToWrite;
-
-		if (uRemainingSpliceSamplesToWrite > 0)
-		{
-			pSplice->UpdateSettings(
-				bReverse,
-				fSpeed,
-				uSpliceSize,
-				fRecycle,
-				fSmoothing);
-
-			// write remaining input to splice
-			pSplice->MixInBlock(pBuffer, &m_pScratchBuffer[uFirstSpliceSamplesToWrite], uRemainingSpliceSamplesToWrite);
-		}
-
-		// mix scratch playback buffer with raw input
- 		for (AkUInt32 uFrame = 0; uFrame < uBufferSize; uFrame++)
-		{
-			pBuffer[uFrame] = (((1 - fMix) * pBuffer[uFrame]) + m_pScratchBuffer[uFrame] * fMix) * fTailMix;
-		}
+	// mix scratch playback buffer with raw input
+	for (AkUInt32 uFrame = 0; uFrame < uBufferSize; uFrame++)
+	{
+		pBuffer[uFrame] = CalculateWetDryMix(pBuffer[uFrame], m_pScratchBuffer[uFrame], fMix) * fTailMix;
 	}
 }
 

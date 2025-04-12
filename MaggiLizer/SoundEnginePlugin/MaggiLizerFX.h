@@ -69,6 +69,20 @@ public:
 
 private:
 
+	inline void maggilizerFX::ProcessChannel(
+		AkReal32* pBuffer,
+		AkUInt32 uBufferSize,
+		Splice* pSplice,
+		RingBuffer* pPlayback,
+		bool bReverse,
+		AkReal32 fSpeed,
+		AkUInt32 uSpliceSize,
+		AkUInt32 uDelaySize,
+		AkReal32 fRecycle,
+		AkReal32 fSmoothing,
+		AkReal32 fMix,
+		AkReal32 fTailMix);
+
 	// this pointer is guaranteed to be valid for the lifetime of the effect instance
 	maggilizerFXParams* m_pParams;
 

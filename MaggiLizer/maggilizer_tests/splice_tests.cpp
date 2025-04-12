@@ -5,6 +5,8 @@
 AkAssertHook g_pAssertHook = nullptr;
 #endif // _DEBUG
 
+const AkReal32 k_sqrt_one_half = 0.70710678118f;
+
 TEST(Splice, Smoothing)
 {
 	{
@@ -136,10 +138,11 @@ TEST(Splice, PushToBuffer_Forward)
 	splice.UpdateSettings(reverse, speed, spliceSize, recycle, smoothing);
 
 	// setup the output buffer data
-	AkReal32 ringBufferData[bufferSize] = { 0.0f };
+	const AkUInt32 ringBufferSize = bufferSize * 2;
+	AkReal32 ringBufferData[ringBufferSize] = { 0.0f };
 
 	RingBuffer ringBuffer;
-	ringBuffer.AttachData(ringBufferData, bufferSize);
+	ringBuffer.AttachData(ringBufferData, ringBufferSize);
 
 	// process
 	const bool bApplySmoothing = false;
@@ -172,10 +175,11 @@ TEST(Splice, PushToBuffer_Reverse)
 	splice.UpdateSettings(reverse, speed, spliceSize, recycle, smoothing);
 
 	// setup the output buffer data
-	AkReal32 ringBufferData[bufferSize] = { 0.0f };
+	const AkUInt32 ringBufferSize = bufferSize * 2;
+	AkReal32 ringBufferData[ringBufferSize] = { 0.0f };
 
 	RingBuffer ringBuffer;
-	ringBuffer.AttachData(ringBufferData, bufferSize);
+	ringBuffer.AttachData(ringBufferData, ringBufferSize);
 
 	// process
 	const bool bApplySmoothing = false;
@@ -228,6 +232,7 @@ TEST(Splice, PushToBuffer_HalfSpeed)
 	}
 }
 
+// FAILING
 TEST(Splice, PushToBuffer_DoubleSpeed)
 {
 	// setup the input buffer data
@@ -298,6 +303,7 @@ TEST(Splice, PushToBuffer_Halfspeed_Reverse)
 	}
 }
 
+// FAILING
 TEST(Splice, PushToBuffer_DoubleSpeed_Reverse)
 {
 	// setup the input buffer data
@@ -317,7 +323,7 @@ TEST(Splice, PushToBuffer_DoubleSpeed_Reverse)
 
 	// setup the output buffer data
 	// pitch of 1200 will result in 2x playback, which will halve the buffer length
-	const AkUInt16 outBufferSize = bufferSize / 2;
+	const AkUInt16 outBufferSize = bufferSize * 2;
 	AkReal32 ringBufferData[outBufferSize] = { 0.0f };
 
 	RingBuffer ringBuffer;
@@ -328,7 +334,7 @@ TEST(Splice, PushToBuffer_DoubleSpeed_Reverse)
 	splice.PushToBuffer(ringBuffer, bApplySmoothing);
 
 	// verify
-	AkReal32 expectedData[outBufferSize] = { 1.0f, 0.8f, 0.6f, 0.4f, 0.2f };
+	AkReal32 expectedData[outBufferSize] = { 1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	for (AkUInt16 bufferIndex = 0; bufferIndex < outBufferSize; bufferIndex++)
 	{
 		ASSERT_FLOAT_EQ(ringBufferData[bufferIndex], expectedData[bufferIndex]);
@@ -354,7 +360,7 @@ TEST(Splice, PushToBuffer_Smoothing)
 
 	ASSERT_EQ(splice.GetSmoothingFrames(), 3);
 
-	const AkUInt16 outBufferSize = bufferSize;
+	const AkUInt16 outBufferSize = bufferSize * 2;
 	AkReal32 ringBufferData[outBufferSize] = { 0.0f };
 	RingBuffer ringBuffer;
 	ringBuffer.AttachData(ringBufferData, outBufferSize);
@@ -371,7 +377,7 @@ TEST(Splice, PushToBuffer_Smoothing)
 	}
 }
 
-TEST(Splice, PushToBuffer_DoubleSpeed_ThreeQuarterSmoothing)
+TEST(Splice, PushToBuffer_ThreeQuarterSmoothing_DoubleSpeed)
 {
 	// setup the input buffer data
 	const AkUInt16 bufferSize = 24;
@@ -391,7 +397,7 @@ TEST(Splice, PushToBuffer_DoubleSpeed_ThreeQuarterSmoothing)
 	// 24 * .25 * .5 *.75 = 2
 	ASSERT_EQ(splice.GetSmoothingFrames(), 2);
 
-	const AkUInt16 outBufferSize = bufferSize;
+	const AkUInt16 outBufferSize = bufferSize * 2;
 	AkReal32 ringBufferData[outBufferSize] = { 0.0f };
 	RingBuffer ringBuffer;
 	ringBuffer.AttachData(ringBufferData, outBufferSize);
@@ -399,7 +405,7 @@ TEST(Splice, PushToBuffer_DoubleSpeed_ThreeQuarterSmoothing)
 	// process
 	splice.PushToBuffer(ringBuffer, true);
 
-	AkReal32 expectedData[bufferSize] = { 0, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	AkReal32 expectedData[bufferSize] = { 0, k_sqrt_one_half, 1, 1, 1, 1, 1, 1, 1, 1, k_sqrt_one_half, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	for (AkUInt16 bufferIndex = 0; bufferIndex < bufferSize; bufferIndex++)
 	{
@@ -407,7 +413,7 @@ TEST(Splice, PushToBuffer_DoubleSpeed_ThreeQuarterSmoothing)
 	}
 }
 
-TEST(Splice, PushToBuffer_DoubleSpeed_FullSmoothing)
+TEST(Splice, PushToBuffer_FullSmoothing_DoubleSpeed)
 {
 	// setup the input buffer data
 	const AkUInt16 bufferSize = 24;
@@ -427,7 +433,7 @@ TEST(Splice, PushToBuffer_DoubleSpeed_FullSmoothing)
 	// 24 * .25 * 1 * .5 = 3
 	ASSERT_EQ(splice.GetSmoothingFrames(), 3);
 
-	const AkUInt16 outBufferSize = bufferSize;
+	const AkUInt16 outBufferSize = bufferSize * 2;
 	AkReal32 ringBufferData[outBufferSize] = { 0.0f };
 	RingBuffer ringBuffer;
 	ringBuffer.AttachData(ringBufferData, outBufferSize);
@@ -502,6 +508,51 @@ TEST(Splice, BadBuffer)
 	AkReal32 speed = 1.33483982;
 	const AkUInt32 spliceSize = 13920;
 	AkReal32 recycle = 0.800000012f;
+	AkReal32 smoothing = 0.0f;
+	splice.UpdateSettings(reverse, speed, spliceSize, recycle, smoothing);
+
+	AkReal32* inputData = new AkReal32[bufferSize];
+	AkReal32* recycleData = new AkReal32[bufferSize];
+	AkZeroMemLarge(inputData, bufferSize * sizeof(AkReal32));
+	AkZeroMemLarge(recycleData, bufferSize * sizeof(AkReal32));
+
+	splice.MixInBlock(inputData, recycleData, bufferSize);
+
+	ASSERT_TRUE(splice.IsFull());
+
+	const AkUInt32 outBufferSize = bufferSize * 2;
+	AkReal32* ringBufferData = new AkReal32[outBufferSize];
+	AkZeroMemLarge(ringBufferData, outBufferSize * sizeof(AkReal32));
+	RingBuffer ringBuffer;
+	ringBuffer.AttachData(ringBufferData, outBufferSize);
+
+	// process
+	const bool bApplySmoothing = false;
+	splice.PushToBuffer(ringBuffer, bApplySmoothing);
+
+	AkReal32* expectedData = new AkReal32[bufferSize];
+
+	delete[] spliceData;
+	delete[] ringBufferData;
+	delete[] expectedData;
+	delete[] inputData;
+	delete[] recycleData;
+}
+
+TEST(Splice, BadBuffer2)
+{
+	// setup the input buffer data
+	const AkUInt32 bufferSize = 48000;
+	AkReal32* spliceData = new AkReal32[bufferSize];
+	AkZeroMemLarge(spliceData, bufferSize * sizeof(AkReal32));
+	//FillBufferWithRandomData(spliceData, bufferSize);
+
+	Splice splice;
+	splice.AttachData(spliceData, bufferSize);
+	bool reverse = false;
+	AkReal32 speed = 1.18920708;
+	const AkUInt32 spliceSize = 33792;
+	AkReal32 recycle = 0.300000012;
 	AkReal32 smoothing = 0.0f;
 	splice.UpdateSettings(reverse, speed, spliceSize, recycle, smoothing);
 

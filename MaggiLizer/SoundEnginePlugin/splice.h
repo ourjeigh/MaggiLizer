@@ -30,9 +30,6 @@ public:
 
 	AkUInt32 GetSmoothingFrames() { return m_uSmoothingFrames; }
 
-	void SetOutptReadPosition(AkUInt32 in_uPosition) { m_uOutputReadPosition = in_uPosition; }
-	AkUInt32 GetOutputReadPosition() { return m_uOutputReadPosition; }
-
 	void MixInBlock(AkReal32* in_pInputBuffer, AkReal32* in_pRecycleBuffer, AkUInt32 in_uSize);
 	AkUInt32 PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing);
 
@@ -55,7 +52,6 @@ public:
 	}
 
 	AkUInt32 m_uWritePosition;
-	AkUInt32 m_uOutputReadPosition;
 
 private:
 	bool m_bReverse;
@@ -66,6 +62,7 @@ private:
 
 	AkReal32* m_pData;
 	AkUInt32 m_uSize;
+
 };
 
 #endif // __SPLICE_H__
