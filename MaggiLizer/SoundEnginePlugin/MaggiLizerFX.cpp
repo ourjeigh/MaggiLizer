@@ -253,9 +253,7 @@ inline void maggilizerFX::ProcessChannel(
 		pPlayback->ReadBlock(m_pScratchBuffer, uBufferSize);
 	}
 
-	// trying to get it so that we can write the splice data in the playback buffer's read position
-	// so that we can crossfade. Not sure if it actually can work...
-	if (pSplice->IsFull() || pSplice->FreeSpace() <= pSplice->GetSmoothingFrames())
+	if (pSplice->IsFull())
 	{
 		// handle delay by advancing the write position by the delay amount before writing splice data in
 		if (uDelaySize > 0)

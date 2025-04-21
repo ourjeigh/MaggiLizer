@@ -17,8 +17,7 @@ public:
 
 	// We will never read up to or past the write, so this will always be true
 	// once write has started
-	bool HasData() const { return m_bHasData; }
-	//bool HasData() const { return m_uReadPosition != m_uWritePosition; }
+	bool HasData() const { return m_uReadPosition != m_uWritePosition; }
 
 	void AttachData(AkReal32* in_pData, AkUInt32 in_uSize) 
 	{ 
@@ -30,7 +29,6 @@ public:
 	{
 		m_uReadPosition = 0;
 		m_uWritePosition = 0;
-		m_bHasData = false;
 	}
 
 	/// <summary>
@@ -78,7 +76,6 @@ private:
 	AkUInt32 m_uReadPosition = 0;
 	AkUInt32 m_uWritePosition = 0;
 	AkReal32* m_pData;
-	bool m_bHasData;
 };
 
 #endif //!__RING_BUFFER_H__

@@ -66,8 +66,7 @@ AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing)
 	const AkUInt32 uFramesToWrite = m_fSpeed > 1.0f ? static_cast<AkReal32>(m_uSplice) / m_fSpeed : m_uSplice;
 	AkUInt32 uFramesWritten = 0;
 
-	bApplySmoothing = true;
-	AkUInt32 uWritePosition = out_pBuffer.m_uReadPosition; //out_pBuffer.m_uWritePosition;
+	AkUInt32 &uWritePosition = out_pBuffer.m_uWritePosition;
 
 	// we need extra precision for large buffers
 	AkReal64 fReadPosition = m_bReverse ? (m_uSplice - 1) : 0.0f;
@@ -133,7 +132,6 @@ AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing)
 	}
 	
 	//AKASSERT(out_pBuffer.m_uReadPosition != out_pBuffer.m_uWritePosition);
-	out_pBuffer.m_bHasData = true;
 	return uFramesWritten;
 }
 
