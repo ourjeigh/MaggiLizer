@@ -33,9 +33,9 @@ the specific language governing permissions and limitations under the License.
 
 typedef AkReal32* AK_RESTRICT AKReal32_Restrict;
 
-const AkReal32 k_playback_buffer_seconds = 5.0f;
 const AkReal32 k_max_splice_buffer_seconds = 1.0f;
-const AkUInt16 k_crossfade_frames = 256; // 1024; // this is good down to ~40Hz so we may need to add HPF
+const AkReal32 k_cache_buffer_seconds = k_max_splice_buffer_seconds * 2.25f;
+const AkReal32 k_max_smoothing_ratio = 0.25f;
 
 AK::IAkPlugin* CreatemaggilizerFX(AK::IAkPluginMemAlloc* in_pAllocator)
 {
@@ -53,14 +53,13 @@ maggilizerFX::maggilizerFX() :
 	m_pParams(nullptr),
 	m_uChannelCount(0),
 	m_uSampleRate(0),
-	m_pSpliceBufferMemory(nullptr),
-	m_uSpliceBufferSize(0),
-	m_pPlaybackBufferMemory(nullptr),
-	m_uPlaybackBufferSize(0),
+	m_pCacheBufferMemory(nullptr),
+	m_uCacheBufferSize(0),
 	m_pScratchBuffer(nullptr),
 	m_uSamplesPerFrame(0),
+	m_pCacheBuffers(nullptr),
 	m_pSplices(nullptr),
-	m_pPlaybacks(nullptr),
+	m_pCrossfadeSplices(nullptr),
 	m_uTailPosition(0)
 {
 }
@@ -80,45 +79,41 @@ AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
 	m_uSamplesPerFrame = audioSettings.uNumSamplesPerFrame;
 
 	// allocate buffer memories
-	const AkUInt32 uPlaybackBufferSize = k_playback_buffer_seconds * m_uSampleRate * m_uChannelCount;
-	m_uPlaybackBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uPlaybackBufferSize, m_uSamplesPerFrame);
-	m_pPlaybackBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uPlaybackBufferSize));
-
-	const AkUInt32 uSpliceBufferSize = (k_max_splice_buffer_seconds * m_uSampleRate + k_crossfade_frames * 2) * m_uChannelCount;
-	m_uSpliceBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uSpliceBufferSize, m_uSamplesPerFrame);
-	m_pSpliceBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSpliceBufferSize));
-
+	const AkUInt32 uPlaybackBufferSize = k_cache_buffer_seconds * m_uSampleRate * m_uChannelCount;
+	m_uCacheBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uPlaybackBufferSize, m_uSamplesPerFrame);
+	m_pCacheBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uCacheBufferSize));
 	
 	m_pScratchBuffer = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSamplesPerFrame));
 
 	// allocate containers
+	m_pCacheBuffers = static_cast<RingBuffer*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(RingBuffer) * m_uChannelCount));
 	m_pSplices = static_cast<Splice*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(Splice) * m_uChannelCount));
-	m_pPlaybacks = static_cast<RingBuffer*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(RingBuffer) * m_uChannelCount));
+	m_pCrossfadeSplices = static_cast<Splice*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(Splice) * m_uChannelCount));
 
-	if (m_pPlaybackBufferMemory == nullptr ||
-		m_pSpliceBufferMemory == nullptr ||
+	if (m_pCacheBufferMemory == nullptr ||
 		m_pScratchBuffer == nullptr ||
+		m_pCacheBuffers == nullptr ||
 		m_pSplices == nullptr ||
-		m_pPlaybacks == nullptr)
+		m_pCrossfadeSplices == nullptr)
 	{
 		return AK_InsufficientMemory;
 	}
 
-	AkZeroMemLarge(m_pPlaybackBufferMemory, sizeof(AkReal32) * m_uPlaybackBufferSize);
-	AkZeroMemLarge(m_pSpliceBufferMemory, sizeof(AkReal32) * m_uSpliceBufferSize);
+	AkZeroMemLarge(m_pCacheBufferMemory, sizeof(AkReal32) * m_uCacheBufferSize);
 	AkZeroMemLarge(m_pScratchBuffer, sizeof(AkReal32) * m_uSamplesPerFrame);
+	AkZeroMemSmall(m_pCacheBuffers, sizeof(RingBuffer) * m_uChannelCount);
 	AkZeroMemSmall(m_pSplices, sizeof(Splice) * m_uChannelCount);
-	AkZeroMemSmall(m_pPlaybacks, sizeof(RingBuffer) * m_uChannelCount);
+	AkZeroMemSmall(m_pCrossfadeSplices, sizeof(Splice) * m_uChannelCount);
 
 	// setup containers
 	for (AkUInt16 uChannelIndex = 0; uChannelIndex < m_uChannelCount; uChannelIndex++)
 	{
-		// assign each splice buffer a block of splice memory
-		AkUInt32 uSpliceSamplesPerChannel = k_max_splice_buffer_seconds * m_uSampleRate;
-		m_pSplices[uChannelIndex].AttachData(&m_pSpliceBufferMemory[uSpliceSamplesPerChannel * uChannelIndex], uSpliceSamplesPerChannel);
+		// assign each buffer a block of splice memory
+		AkUInt32 uCacheBufferSamplesPerChannel = k_cache_buffer_seconds * m_uSampleRate;
+		m_pCacheBuffers[uChannelIndex].AttachData(&m_pCacheBufferMemory[uCacheBufferSamplesPerChannel * uChannelIndex], uCacheBufferSamplesPerChannel);
 
-		AkUInt32 uPlaybackSamplesPerChannel = k_playback_buffer_seconds * m_uSampleRate;
-		m_pPlaybacks[uChannelIndex].AttachData(&m_pPlaybackBufferMemory[uPlaybackSamplesPerChannel * uChannelIndex], uPlaybackSamplesPerChannel);
+		m_pSplices[uChannelIndex].SetAttachedBufferSize(uCacheBufferSamplesPerChannel);
+		m_pCrossfadeSplices[uChannelIndex].SetAttachedBufferSize(uCacheBufferSamplesPerChannel);
 	}
 
 	return AK_Success;
@@ -127,14 +122,13 @@ AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
 AKRESULT maggilizerFX::Term(AK::IAkPluginMemAlloc* in_pAllocator)
 {
 	// we are NOT responsible for freeing the cached m_pParams (and Wwise will crash if we do)
-
 	m_pParams = nullptr;
 
-	AK_PLUGIN_FREE(in_pAllocator, m_pSplices);
-	AK_PLUGIN_FREE(in_pAllocator, m_pPlaybacks);
-	AK_PLUGIN_FREE(in_pAllocator, m_pPlaybackBufferMemory);
-	AK_PLUGIN_FREE(in_pAllocator, m_pSpliceBufferMemory);
+	AK_PLUGIN_FREE(in_pAllocator, m_pCacheBuffers);
+	AK_PLUGIN_FREE(in_pAllocator, m_pCacheBufferMemory);
 	AK_PLUGIN_FREE(in_pAllocator, m_pScratchBuffer);
+	AK_PLUGIN_FREE(in_pAllocator, m_pSplices);
+	AK_PLUGIN_FREE(in_pAllocator, m_pCrossfadeSplices);
 
 	AK_PLUGIN_DELETE(in_pAllocator, this);
 
@@ -145,13 +139,21 @@ AKRESULT maggilizerFX::Reset()
 {
 	m_uTailPosition = 0;
 
-	AkZeroMemLarge(m_pPlaybackBufferMemory, sizeof(AkReal32) * m_uPlaybackBufferSize);
-	AkZeroMemLarge(m_pSpliceBufferMemory, sizeof(AkReal32) * m_uSpliceBufferSize);
+	AkZeroMemLarge(m_pCacheBufferMemory, sizeof(AkReal32) * m_uCacheBufferSize);
 
 	for (AkUInt16 uChannelIndex = 0; uChannelIndex < m_uChannelCount; uChannelIndex++)
 	{
+		m_pCacheBuffers[uChannelIndex].Reset();
 		m_pSplices[uChannelIndex].Reset();
-		m_pPlaybacks[uChannelIndex].Reset();
+		m_pCrossfadeSplices[uChannelIndex].Reset();
+
+		const SpliceSettings settings = GetSettings();
+		m_pSplices[uChannelIndex].PrepareNextSplice(settings);
+
+		// Backtrack the initial splice into a silent portion of the cache buffer so that when the first splice is ready,
+		// it will advance into the filled portion of the buffer.
+		// Is this a hack? I just don't know...
+		m_pSplices[uChannelIndex].SetInitialPosition(m_pCacheBuffers[uChannelIndex].GetSize() - settings.uSpliceSamples);
 	}
 
 	return AK_Success;
@@ -168,22 +170,13 @@ AKRESULT maggilizerFX::GetPluginInfo(AkPluginInfo& out_rPluginInfo)
 
 void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 {
-	// Check state first because the tail handler with add valid samples and update the state
+	// Check state first because the tail handler will add valid samples and update the state
 	const bool bNoMoreData = io_pBuffer->eState == AK_NoMoreData;
 
 	// Set constants
 	const AkUInt32 uChannelCount = io_pBuffer->NumChannels();
 
-	const bool bReverse = m_pParams->m_rtpcs.bReverse;
-	const AkReal32 fDelay = m_pParams->m_rtpcs.fDelay;
-	const AkReal32 fRecycle = m_pParams->m_rtpcs.fRecycle;
-	const AkReal32 fMix = m_pParams->m_rtpcs.fMix;
-	const AkReal32 fSmoothing = m_pParams->m_rtpcs.fSmoothing;
-
-	const AkReal32 fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
-	
-	const AkUInt32 uSpliceSize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);// +k_crossfade_frames * 2;
-	const AkUInt32 uDelaySize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay), m_uSamplesPerFrame);
+	const SpliceSettings settings = GetSettings();
 
 	// Update Tail Handler
 	const AkUInt32 uMaxTailSamples = ((m_uSampleRate * k_max_splice_buffer_seconds)) * (1 + 4 * m_pParams->m_rtpcs.fRecycle);
@@ -205,87 +198,64 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 	{
 		AKReal32_Restrict pBuffer = static_cast<AKReal32_Restrict>(io_pBuffer->GetChannel(uChannelndex));
 		Splice* pSplice = &m_pSplices[uChannelndex];
-		RingBuffer* pPlayback = &m_pPlaybacks[uChannelndex];
+		Splice* pCrossfadeSplice = &m_pCrossfadeSplices[uChannelndex];
+		RingBuffer* pCacheBuffer = &m_pCacheBuffers[uChannelndex];
 
 		ProcessChannel(
 			pBuffer,
 			uBufferSize,
+			pCacheBuffer,
 			pSplice,
-			pPlayback,
-			bReverse,
-			fSpeed,
-			uSpliceSize,
-			uDelaySize,
-			fRecycle,
-			fSmoothing,
-			fMix,
+			pCrossfadeSplice,
+			settings,
 			fTailMix);
 	}
 }
 
+SpliceSettings maggilizerFX::GetSettings()
+{
+	SpliceSettings settings;
+
+	settings.bReverse = m_pParams->m_rtpcs.bReverse;
+	settings.fRecycle = m_pParams->m_rtpcs.fRecycle;
+	settings.fMix = m_pParams->m_rtpcs.fMix;
+	settings.fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
+
+	const AkReal32 fSplice = m_pParams->m_rtpcs.fSplice;
+	const AkReal32 fDelay = m_pParams->m_rtpcs.fDelay;
+	settings.uSpliceSamples = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);
+	settings.uDelaySamples = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay), m_uSamplesPerFrame);
+	
+	settings.uSmoothingSamples = static_cast<AkUInt32>(settings.uSpliceSamples * k_max_smoothing_ratio * m_pParams->m_rtpcs.fSmoothing);
+
+	return settings;
+}
+
+
 inline void maggilizerFX::ProcessChannel(
 	AkReal32* pBuffer,
-	const AkUInt32 uBufferSize,
+	AkUInt32 uBufferSize,
+	RingBuffer* pCacheBuffer,
 	Splice* pSplice,
-	RingBuffer* pPlayback,
-	const bool bReverse,
-	const AkReal32 fSpeed,
-	const AkUInt32 uSpliceSize,
-	const AkUInt32 uDelaySize,
-	const AkReal32 fRecycle,
-	const AkReal32 fSmoothing,
-	const AkReal32 fMix,
-	const AkReal32 fTailMix)
+	Splice* pCrossfadeSplice,
+	const SpliceSettings& settings,
+	AkReal32 fTailMix)
 {
-	if (pSplice->IsEmpty())
+	AkZeroMemLarge(m_pScratchBuffer, sizeof(AkReal32) * m_uSamplesPerFrame);
+	
+	if (pSplice->IsReady())
 	{
-		pSplice->UpdateSettings(
-			bReverse,
-			fSpeed,
-			uSpliceSize,
-			fRecycle,
-			fSmoothing);
+		pSplice->PrepareNextSplice(settings);
 	}
 
-	if (pPlayback->HasData())
-	{
-		// read playback into the scratch buffer
-		pPlayback->ReadBlock(m_pScratchBuffer, uBufferSize);
-	}
+	pSplice->Process(pCacheBuffer, uBufferSize, m_pScratchBuffer, pBuffer);
 
-	if (pSplice->IsFull())
-	{
-		// handle delay by advancing the write position by the delay amount before writing splice data in
-		if (uDelaySize > 0)
-		{
-			//pPlayback->WriteSilentBlock(uDelaySize);
-		}
+	// Write the input buffer to the cache buffer
+	pCacheBuffer->WriteBlock(pBuffer, uBufferSize);
 
-		// write the processed splice into the playback buffer
-		pSplice->PushToBuffer(*pPlayback, pPlayback->HasData());
+	MixBufferBIntoA(pBuffer, m_pScratchBuffer, uBufferSize, settings.fMix);
 
-		AKASSERT(pPlayback->HasData()); 
-
-		//pPlayback->BacktrackWriteHead(pSplice->GetSmoothingFrames());
-
-		pSplice->Reset();
-		pSplice->UpdateSettings(
-			bReverse,
-			fSpeed,
-			uSpliceSize,
-			fRecycle,
-			fSmoothing);
-	}
-
-	// we align splice size to uBufferSize so we should always be able to fit an entire block
-	AKASSERT(pSplice->FreeSpace() >= uBufferSize);
-	pSplice->MixInBlock(pBuffer, m_pScratchBuffer, uBufferSize);
-
-	// mix scratch playback buffer with raw input
-	for (AkUInt32 uFrame = 0; uFrame < uBufferSize; uFrame++)
-	{
-		pBuffer[uFrame] = CalculateWetDryMix(pBuffer[uFrame], m_pScratchBuffer[uFrame], fMix) * fTailMix;
-	}
+	// TODO: Handle tail
 }
 
 AKRESULT maggilizerFX::TimeSkip(AkUInt32 in_uFrames)

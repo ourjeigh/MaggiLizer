@@ -1,63 +1,67 @@
 #include <AK/Tools/Common/AkAssert.h>
 #include "splice.h"
 #include "utilities.h"
+using namespace AKPLATFORM;
 
 #define UINT32_MAX 0xffffffff
 
-const AkReal32 k_max_smoothing_ratio = 0.25f;
 
 Splice::Splice() :
-	m_bReverse(false),
-	m_fSpeed(0.0f),
-	m_uSize(0),
-	m_uSplice(0),
-	m_fRecycle(0.0f),
-	m_uSmoothingFrames(0),
-	m_uWritePosition(0),
-	m_pData(nullptr)
+	m_uAttachedBufferSize(0)
 {
+	Reset();
 }
 
 Splice::~Splice()
 {
 }
 
-void Splice::AttachData(AkReal32* in_pData, AkUInt32 in_uSize)
+void Splice::Reset()
 {
-	m_pData = in_pData;
-	m_uSize = in_uSize;
+	m_Settings.Clear();
+
+	m_uReadPosition = 0;
+	m_uEndPosition = 0;
+	m_uDelaySamplesRemaining = 0;
 }
 
-void Splice::UpdateSettings(
-	bool bReverse,
-	AkReal32 fSpeed,
-	AkUInt32 uSplice,
-	AkReal32 fRecycle,
-	AkReal32 fSmoothing)
+void Splice::PrepareNextSplice(const SpliceSettings& settings)
 {
-	AKASSERT(uSplice);
+	AKASSERT(settings.uSpliceSamples);
 
-	m_bReverse = bReverse;
-	m_fSpeed = fSpeed;
-	m_uSplice = uSplice;
-	m_fRecycle = fRecycle;
-	m_uSmoothingFrames = uSplice * k_max_smoothing_ratio * fSmoothing * AkMin(1, 1 / fSpeed);
-}
+	m_Settings.Clear();
+	m_Settings = settings;
 
-void Splice::MixInBlock(AkReal32* in_pInputBuffer, AkReal32* in_pRecycleBuffer, AkUInt32 in_uSize)
-{
-	AkUInt32 uSamplesProcessed = 0;
-	while (uSamplesProcessed < in_uSize && m_uWritePosition < m_uSplice)
+	if (m_Settings.bReverse)
 	{
-		AkReal32 fInput = in_pInputBuffer[uSamplesProcessed];
-		AkReal32 fRecycle = in_pRecycleBuffer[uSamplesProcessed];
-		AkReal32 fWrite = fInput + (m_fRecycle * fRecycle);
-
-		m_pData[m_uWritePosition++] = fWrite;
-		uSamplesProcessed++;
+		m_uEndPosition = m_uReadPosition;
+		m_uReadPosition = (m_uEndPosition + m_Settings.uSpliceSamples) % m_uAttachedBufferSize;
+	}
+	else
+	{
+		m_uEndPosition = (m_uReadPosition + m_Settings.uSpliceSamples) % m_uAttachedBufferSize;
 	}
 }
 
+
+void Splice::Process(
+	RingBuffer* pBuffer,
+	AkUInt32 uSize,
+	AkReal32* out_pBuffer,
+	AkReal32* out_pRecycleBuffer)
+{
+	AKASSERT(pBuffer);
+	AKASSERT(out_pBuffer);
+	AKASSERT(uSize);
+
+	pBuffer->PeekBlock(out_pBuffer, uSize, m_uReadPosition); // temp hack
+
+	RecycleBufferBIntoA(out_pRecycleBuffer, out_pBuffer, uSize, m_Settings.fRecycle);
+
+	m_uReadPosition = (m_uReadPosition + uSize) % m_uAttachedBufferSize;
+}
+
+#if 0 // old
 AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing)
 {
 	// If speed is less than one we would generate more samples than we have in the splice buffer.
@@ -134,4 +138,4 @@ AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing)
 	//AKASSERT(out_pBuffer.m_uReadPosition != out_pBuffer.m_uWritePosition);
 	return uFramesWritten;
 }
-
+#endif

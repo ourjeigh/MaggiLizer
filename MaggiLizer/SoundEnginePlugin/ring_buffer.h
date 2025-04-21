@@ -15,9 +15,9 @@ public:
 
 	~RingBuffer() {}
 
-	// We will never read up to or past the write, so this will always be true
-	// once write has started
 	bool HasData() const { return m_uReadPosition != m_uWritePosition; }
+
+	AkUInt32 GetSize() const { return m_uSize; }
 
 	void AttachData(AkReal32* in_pData, AkUInt32 in_uSize) 
 	{ 
@@ -68,13 +68,13 @@ public:
 	AkUInt32 PeekBlock(AkReal32* out_pData, const AkUInt32 in_uSize, const AkUInt32 in_uReadPosition) const;
 
 private:
-	friend class Splice;
+	//friend class Splice;
 
 	AkUInt32 ReadBlockInternal(AkReal32* out_pData, const AkUInt32 in_uSize, AkUInt32& inout_uReadPosition) const;
 
 	AkUInt32 m_uSize;
-	AkUInt32 m_uReadPosition = 0;
-	AkUInt32 m_uWritePosition = 0;
+	AkUInt32 m_uReadPosition;
+	AkUInt32 m_uWritePosition;
 	AkReal32* m_pData;
 };
 

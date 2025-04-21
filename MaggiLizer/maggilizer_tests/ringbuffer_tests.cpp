@@ -23,7 +23,6 @@ TEST(RingBuffer, WriteSingle)
 	{
 		EXPECT_FLOAT_EQ(expectedData[i], ringBufferData[i]);
 	}
-
 }
 
 TEST(RingBuffer, WriteAndRead)

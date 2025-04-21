@@ -78,11 +78,9 @@
 												<Custom>
 													<Effect Name="MaggiLizer (Custom)" ID="{3BE5726B-BEBC-4368-AA5B-CCCB9A3D6E20}" ShortID="747916829" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
 														<PropertyList>
-															<Property Name="pitch" Type="Real32" Value="-300"/>
-															<Property Name="recycle" Type="Real32" Value="58"/>
-															<Property Name="reverse" Type="bool" Value="True"/>
+															<Property Name="recycle" Type="Real32" Value="82"/>
 															<Property Name="smoothing" Type="Real32" Value="0"/>
-															<Property Name="splice" Type="Real32" Value="170"/>
+															<Property Name="splice" Type="Real32" Value="100"/>
 														</PropertyList>
 													</Effect>
 												</Custom>
@@ -125,12 +123,9 @@
 												<Custom>
 													<Effect Name="MaggiLizer (Custom)" ID="{55B69384-0698-45EB-8E26-0CE793F1C3F6}" ShortID="1012224542" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
 														<PropertyList>
-															<Property Name="delay" Type="Real32" Value="130"/>
-															<Property Name="pitch" Type="Real32" Value="-100"/>
-															<Property Name="recycle" Type="Real32" Value="56"/>
-															<Property Name="reverse" Type="bool" Value="True"/>
+															<Property Name="recycle" Type="Real32" Value="58"/>
 															<Property Name="smoothing" Type="Real32" Value="0"/>
-															<Property Name="splice" Type="Real32" Value="320"/>
+															<Property Name="splice" Type="Real32" Value="510"/>
 														</PropertyList>
 													</Effect>
 												</Custom>

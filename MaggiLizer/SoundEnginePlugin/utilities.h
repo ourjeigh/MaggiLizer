@@ -74,6 +74,18 @@ inline void MixBufferBIntoA(
 	}
 }
 
+inline void RecycleBufferBIntoA(
+	AkReal32* in_pBufferA,
+	const AkReal32* in_pBufferB,
+	const AkUInt32 in_uSize,
+	const AkReal32 in_fMix)
+{
+	for (AkUInt32 i = 0; i < in_uSize; i++)
+	{
+		in_pBufferA[i] = in_pBufferA[i] + in_pBufferB[i] * in_fMix;
+	}
+}
+
 /// <summary>
 /// Pitch change is just playback speed
 /// </summary>

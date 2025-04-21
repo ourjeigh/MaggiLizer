@@ -69,18 +69,15 @@ public:
 
 private:
 
-	inline void maggilizerFX::ProcessChannel(
+	SpliceSettings GetSettings();
+
+	inline void ProcessChannel(
 		AkReal32* pBuffer,
 		AkUInt32 uBufferSize,
+		RingBuffer* pCacheBuffer,
 		Splice* pSplice,
-		RingBuffer* pPlayback,
-		bool bReverse,
-		AkReal32 fSpeed,
-		AkUInt32 uSpliceSize,
-		AkUInt32 uDelaySize,
-		AkReal32 fRecycle,
-		AkReal32 fSmoothing,
-		AkReal32 fMix,
+		Splice* pCrossfadeSplice,
+		const SpliceSettings& settings,
 		AkReal32 fTailMix);
 
 	// this pointer is guaranteed to be valid for the lifetime of the effect instance
@@ -90,18 +87,16 @@ private:
 	AkUInt32 m_uSampleRate;
 	AkUInt32 m_uSamplesPerFrame;
 
-	AkReal32* m_pSpliceBufferMemory;
-	AkUInt32 m_uSpliceBufferSize;
-
-	AkReal32* m_pPlaybackBufferMemory;
-	AkUInt32 m_uPlaybackBufferSize;
+	AkReal32* m_pCacheBufferMemory;
+	AkUInt32 m_uCacheBufferSize;
 
 	// small buffer for mixing input and playback buffers within Execute
 	AkReal32* m_pScratchBuffer;
 
 	// one per channel
+	RingBuffer* m_pCacheBuffers;
 	Splice* m_pSplices;
-	RingBuffer* m_pPlaybacks;
+	Splice* m_pCrossfadeSplices;
 
 	// responsible for creating valid frames once input is finished to allow for delay/recycle tail
 	AkFXTailHandler m_TailHandler;
