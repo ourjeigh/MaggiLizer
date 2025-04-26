@@ -51,6 +51,7 @@ private:
 	AkUInt32 m_uEndPosition;
 	AkUInt32 m_uDelaySamplesRemaining;
 	AkUInt32 m_uAttachedBufferSize;
+	AkUInt32 m_uRepeatCount;
 };
 
 #endif // __SPLICE_H__

@@ -78,7 +78,8 @@
 												<Custom>
 													<Effect Name="MaggiLizer (Custom)" ID="{3BE5726B-BEBC-4368-AA5B-CCCB9A3D6E20}" ShortID="747916829" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
 														<PropertyList>
-															<Property Name="recycle" Type="Real32" Value="82"/>
+															<Property Name="recycle" Type="Real32" Value="100"/>
+															<Property Name="reverse" Type="bool" Value="True"/>
 															<Property Name="smoothing" Type="Real32" Value="0"/>
 															<Property Name="splice" Type="Real32" Value="100"/>
 														</PropertyList>

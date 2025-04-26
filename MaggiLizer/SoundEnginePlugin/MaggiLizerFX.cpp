@@ -148,11 +148,10 @@ AKRESULT maggilizerFX::Reset()
 		m_pCrossfadeSplices[uChannelIndex].Reset();
 
 		const SpliceSettings settings = GetSettings();
-		m_pSplices[uChannelIndex].PrepareNextSplice(settings);
 
 		// Backtrack the initial splice into a silent portion of the cache buffer so that when the first splice is ready,
-		// it will advance into the filled portion of the buffer.
-		// Is this a hack? I just don't know...
+		// it will advance into the filled portion of the buffer. This is a bit of a hack since we haven't even set splice
+		// settings yet, we're just waiting for read to wrap back around to the initial end position of 0.
 		m_pSplices[uChannelIndex].SetInitialPosition(m_pCacheBuffers[uChannelIndex].GetSize() - settings.uSpliceSamples);
 	}
 
@@ -175,11 +174,10 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 
 	// Set constants
 	const AkUInt32 uChannelCount = io_pBuffer->NumChannels();
-
 	const SpliceSettings settings = GetSettings();
 
 	// Update Tail Handler
-	const AkUInt32 uMaxTailSamples = ((m_uSampleRate * k_max_splice_buffer_seconds)) * (1 + 4 * m_pParams->m_rtpcs.fRecycle);
+	const AkUInt32 uMaxTailSamples = AkMax(settings.uSpliceSamples, (m_uSampleRate * k_cache_buffer_seconds) * m_pParams->m_rtpcs.fRecycle);
 	m_TailHandler.HandleTail(io_pBuffer, uMaxTailSamples);
 
 	// Set buffer size after tail handler because it will adjust the buffer frames in tail mode
@@ -191,8 +189,6 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 		fTailMix = CalculateWetDryMix(1.0f, 0.0f, static_cast<AkReal32>(m_uTailPosition) / uMaxTailSamples);
 		m_uTailPosition += uBufferSize;
 	}
-
-	AkZeroMemLarge(m_pScratchBuffer, sizeof(AkReal32) * m_uSamplesPerFrame);
 
 	for (AkUInt32 uChannelndex = 0; uChannelndex < uChannelCount; uChannelndex++)
 	{
@@ -255,7 +251,15 @@ inline void maggilizerFX::ProcessChannel(
 
 	MixBufferBIntoA(pBuffer, m_pScratchBuffer, uBufferSize, settings.fMix);
 
-	// TODO: Handle tail
+	// Handle tail
+	// TODO: Smooth this out, we're setting the same mix value for the entire buffer
+	if (fTailMix < 1.0f)
+	{
+		for (AkUInt32 uBufferIndex = 0; uBufferIndex < uBufferSize; uBufferIndex++)
+		{
+			pBuffer[uBufferIndex] *= fTailMix;
+		}
+	}
 }
 
 AKRESULT maggilizerFX::TimeSkip(AkUInt32 in_uFrames)

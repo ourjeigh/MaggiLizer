@@ -4,6 +4,14 @@
 
 #include "pch.h"
 
+void FillBufferWithLinearData(float* pBuffer, unsigned long uSize)
+{
+	for (unsigned long i = 0; i < uSize; i++)
+	{
+		pBuffer[i] = i + 1;
+	}
+}
+
 void FillBufferWithRandomData(float* pBuffer, unsigned long uSize)
 {
 	for (unsigned long i = 0; i < uSize; i++)

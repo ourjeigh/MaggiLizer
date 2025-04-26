@@ -79,10 +79,6 @@ void RingBuffer::ReadBlock(AkReal32* out_pData, const AkUInt32 in_uSize)
 {
 	AKASSERT(HasData());
 	AkUInt32 uSizeRead = ReadBlockInternal(out_pData, in_uSize, m_uReadPosition);
-
-	// If we didn't read the full block, that means we read all the readable samples.
-	// Make sure read and write positions are equal so that HasData will return false.
-	//AKASSERT(uSizeRead == in_uSize || m_uReadPosition == m_uWritePosition);
 }
 
 void RingBuffer::PeekReadBlock(AkReal32* out_pData, const AkUInt32 in_uSize) const
@@ -109,12 +105,16 @@ AkUInt32 RingBuffer::ReadBlockInternal(AkReal32* out_pData, const AkUInt32 in_uS
 	//AKASSERT(HasData());
 
 	AkUInt32 uSpace = m_uSize - inout_uReadPosition;
-	AkUInt32 uReadWriteDistance = (m_uWritePosition - m_uReadPosition + m_uSize) % m_uSize;
-	AkUInt32 ufirstBlockSize = AkMin(AkMin(uSpace, in_uSize), uReadWriteDistance);
+
+	// This has got to go. We don't care about distance to read position anymore.
+	//AkUInt32 uReadWriteDistance = (m_uWritePosition - m_uReadPosition + m_uSize) % m_uSize;
+	//AkUInt32 ufirstBlockSize = AkMin(AkMin(uSpace, in_uSize), uReadWriteDistance);
+	AkUInt32 ufirstBlockSize = AkMin(uSpace, in_uSize);
 
 	AKPLATFORM::AkMemCpy(out_pData, &m_pData[inout_uReadPosition], sizeof(AkReal32) * ufirstBlockSize);
 
-	AkUInt32 uSecondBlockSize = AkMin(in_uSize - ufirstBlockSize, uReadWriteDistance - ufirstBlockSize);
+	//AkUInt32 uSecondBlockSize = AkMin(in_uSize - ufirstBlockSize, uReadWriteDistance - ufirstBlockSize);
+	AkUInt32 uSecondBlockSize = in_uSize - ufirstBlockSize;
 	AKASSERT(uSecondBlockSize >= 0);
 
 	if (uSecondBlockSize)

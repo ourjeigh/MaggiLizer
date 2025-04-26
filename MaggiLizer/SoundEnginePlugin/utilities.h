@@ -11,6 +11,7 @@
 #endif //_DEBUG
 
 const AkReal32 k_pi_over_two = 1.5707963267948966192313216916398f;
+const AkReal32 k_float_threshold = 0.00001;
 
 // for testing different options
 const bool k_use_sin_cos_xfade = false;
@@ -23,8 +24,8 @@ inline static AkUInt32 ConvertMillisecondsToSamples(
 }
 
 inline AkReal32 CalculateWetDryMix(
-	const AkReal32 fDry, 
-	const AkReal32 fWet, 
+	const AkReal32 fDry,
+	const AkReal32 fWet,
 	const AkReal32 fMix)
 {
 	return (fDry) * (1 - fMix) + fWet * fMix;
@@ -83,6 +84,23 @@ inline void RecycleBufferBIntoA(
 	for (AkUInt32 i = 0; i < in_uSize; i++)
 	{
 		in_pBufferA[i] = in_pBufferA[i] + in_pBufferB[i] * in_fMix;
+	}
+}
+
+inline void Swap(AkReal32& a, AkReal32& b)
+{
+	AkReal32 temp = a;
+	a = b;
+	b = temp;
+}
+
+inline void ReverseBuffer(
+	AkReal32* inout_pBuffer, 
+	AkUInt32 uSize)
+{
+	for (AkUInt32 i = 0; i < uSize / 2; i++)
+	{
+		Swap(inout_pBuffer[i], inout_pBuffer[uSize - i - 1]);
 	}
 }
 

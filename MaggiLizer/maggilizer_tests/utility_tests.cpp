@@ -81,3 +81,18 @@ TEST(Utilities, CalculateSpeed)
 		ASSERT_FLOAT_EQ(expectedSpeed, actualSpeed);
 	}
 }
+
+TEST(Utilities, ReverseBuffer)
+{
+	const AkUInt32 uSize = 8;
+	AkReal32 buffer[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+	ReverseBuffer(buffer, uSize);
+
+	AkReal32 expected[] = { 8, 7, 6, 5, 4, 3, 2, 1 };
+
+	for (AkUInt32 i = 0; i < uSize; i++)
+	{
+		ASSERT_FLOAT_EQ(expected[i], buffer[i]);
+	}
+}

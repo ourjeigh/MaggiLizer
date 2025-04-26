@@ -68,8 +68,6 @@ public:
 	AkUInt32 PeekBlock(AkReal32* out_pData, const AkUInt32 in_uSize, const AkUInt32 in_uReadPosition) const;
 
 private:
-	//friend class Splice;
-
 	AkUInt32 ReadBlockInternal(AkReal32* out_pData, const AkUInt32 in_uSize, AkUInt32& inout_uReadPosition) const;
 
 	AkUInt32 m_uSize;
