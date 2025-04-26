@@ -21,7 +21,7 @@ struct SpliceSettings
 	// Might not need this in these settings if it is handled by a separate splice
 	AkUInt32 uSmoothingSamples;
 
-	void Clear() { ZeroMemory(this, sizeof(SpliceSettings)); }
+	void Clear();
 };
 
 class Splice
@@ -36,7 +36,7 @@ public:
 	void Reset();
 	void PrepareNextSplice(const SpliceSettings& settings);
 
-	bool IsReady() const { return m_uEndPosition == m_uReadPosition; }
+	bool IsProcessingComplete() const { return m_uEndPosition == m_uReadPosition; }
 
 	void Process(
 		RingBuffer* pBuffer,

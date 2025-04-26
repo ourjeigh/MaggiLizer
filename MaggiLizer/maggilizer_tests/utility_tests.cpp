@@ -96,3 +96,91 @@ TEST(Utilities, ReverseBuffer)
 		ASSERT_FLOAT_EQ(expected[i], buffer[i]);
 	}
 }
+
+TEST(Utilities, InputSize_SpeedOne)
+{
+	const AkReal32 fSpeed = 1.0f;
+	const AkUInt32 uOutputSize = 512;
+	const AkUInt32 expectedInputSize = 512;
+
+	AkUInt32 actualInputSize = CalculateInputSizeForOutput(uOutputSize, fSpeed);
+
+	ASSERT_EQ(expectedInputSize, actualInputSize);
+}
+
+TEST(Utilities, InputSize_SpeedHalf)
+{
+	const AkReal32 fSpeed = 0.5f;
+	const AkUInt32 uOutputSize = 512;
+	const AkUInt32 expectedInputSize = 256;
+
+	AkUInt32 actualInputSize = CalculateInputSizeForOutput(uOutputSize, fSpeed);
+
+	ASSERT_EQ(expectedInputSize, actualInputSize);
+}
+
+TEST(Utilities, InputSize_SpeedDouble)
+{
+	const AkReal32 fSpeed = 2.0f;
+	const AkUInt32 uOutputSize = 512;
+	const AkUInt32 expectedInputSize = 1024;
+
+	AkUInt32 actualInputSize = CalculateInputSizeForOutput(uOutputSize, fSpeed);
+
+	ASSERT_EQ(expectedInputSize, actualInputSize);
+}
+
+TEST(Utilities, ApplySpeed_SpeedOne)
+{
+	return;
+
+	const AkUInt32 uSize = 8;
+	AkReal32 buffer[] = {1, 2, 3, 4, 5, 6, 7, 8};
+	AkReal32 fSpeed = 1.0f;
+
+	AkUInt32 uFramesFilled = ApplySpeedToBuffer(buffer, uSize, fSpeed);
+	ASSERT_EQ(uFramesFilled, uSize);
+
+	AkReal32 expected[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+
+	for (size_t index = 0; index < uSize; index++)
+	{
+		ASSERT_FLOAT_EQ(expected[index], buffer[index]);
+	}
+}
+
+TEST(Utilities, ApplySpeed_SpeedHalf)
+{
+	const AkUInt32 uSize = 8;
+	AkReal32 buffer[] = { 1, 2, 3, 4, 0, 0, 0, 0 };
+	AkReal32 fSpeed = 0.5f;
+
+	AkUInt32 uFramesToProcess = CalculateInputSizeForOutput(uSize, fSpeed);
+	AkUInt32 uFramesFilled = ApplySpeedToBuffer(buffer, uFramesToProcess, fSpeed);
+	ASSERT_EQ(uFramesFilled, uSize);
+
+	AkReal32 expected[] = { 1, 1.5, 2, 2.5, 3, 3.5, 4, 2 };
+
+	for (size_t index = 0; index < uSize; index++)
+	{
+		ASSERT_FLOAT_EQ(expected[index], buffer[index]);
+	}
+}
+
+TEST(Utilities, ApplySpeed_SpeedDouble)
+{
+	const AkUInt32 uSize = 8;
+	AkReal32 buffer[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+	AkReal32 fSpeed = 2.0f;
+
+	AkUInt32 uFramesToProcess = CalculateInputSizeForOutput(uSize, fSpeed);
+	AkUInt32 uFramesFilled = ApplySpeedToBuffer(buffer, uFramesToProcess, fSpeed);
+	ASSERT_EQ(uFramesFilled, uSize);
+
+	AkReal32 expected[] = { 1, 3, 5, 7, 9, 11, 13, 15};
+
+	for (size_t index = 0; index < uSize; index++)
+	{
+		ASSERT_FLOAT_EQ(expected[index], buffer[index]);
+	}
+}

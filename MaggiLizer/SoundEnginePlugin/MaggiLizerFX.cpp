@@ -36,6 +36,8 @@ typedef AkReal32* AK_RESTRICT AKReal32_Restrict;
 const AkReal32 k_max_splice_buffer_seconds = 1.0f;
 const AkReal32 k_cache_buffer_seconds = k_max_splice_buffer_seconds * 2.25f;
 const AkReal32 k_max_smoothing_ratio = 0.25f;
+// TODO: Use this to verify param inputs
+const AkReal32 k_max_speed = 2.0f;
 
 AK::IAkPlugin* CreatemaggilizerFX(AK::IAkPluginMemAlloc* in_pAllocator)
 {
@@ -83,7 +85,8 @@ AKRESULT maggilizerFX::Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectP
 	m_uCacheBufferSize = AK_ALIGN_TO_NEXT_BOUNDARY(uPlaybackBufferSize, m_uSamplesPerFrame);
 	m_pCacheBufferMemory = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uCacheBufferSize));
 	
-	m_pScratchBuffer = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSamplesPerFrame));
+	// scratch buffer needs to be large enough to temporarily hold a double frame buffer so that it can be pitched up into a single frame length
+	m_pScratchBuffer = static_cast<AkReal32*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(AkReal32) * m_uSamplesPerFrame * k_max_speed));
 
 	// allocate containers
 	m_pCacheBuffers = static_cast<RingBuffer*>(AK_PLUGIN_ALLOC(in_pAllocator, sizeof(RingBuffer) * m_uChannelCount));
@@ -167,6 +170,25 @@ AKRESULT maggilizerFX::GetPluginInfo(AkPluginInfo& out_rPluginInfo)
 	return AK_Success;
 }
 
+SpliceSettings maggilizerFX::GetSettings()
+{
+	SpliceSettings settings;
+
+	settings.bReverse = m_pParams->m_rtpcs.bReverse;
+	settings.fRecycle = m_pParams->m_rtpcs.fRecycle;
+	settings.fMix = m_pParams->m_rtpcs.fMix;
+	settings.fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
+
+	const AkReal32 fSplice = m_pParams->m_rtpcs.fSplice;
+	const AkReal32 fDelay = m_pParams->m_rtpcs.fDelay;
+	settings.uSpliceSamples = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);
+	settings.uDelaySamples = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay), m_uSamplesPerFrame);
+
+	settings.uSmoothingSamples = static_cast<AkUInt32>(settings.uSpliceSamples * k_max_smoothing_ratio * m_pParams->m_rtpcs.fSmoothing);
+
+	return settings;
+}
+
 void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 {
 	// Check state first because the tail handler will add valid samples and update the state
@@ -186,6 +208,8 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 
 	if (bNoMoreData)
 	{
+		// Move this into ProcessChannel, just passing in the tail position instead so that we can use 
+		// CalculateEqualPowerFadeOut
 		fTailMix = CalculateWetDryMix(1.0f, 0.0f, static_cast<AkReal32>(m_uTailPosition) / uMaxTailSamples);
 		m_uTailPosition += uBufferSize;
 	}
@@ -208,26 +232,6 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 	}
 }
 
-SpliceSettings maggilizerFX::GetSettings()
-{
-	SpliceSettings settings;
-
-	settings.bReverse = m_pParams->m_rtpcs.bReverse;
-	settings.fRecycle = m_pParams->m_rtpcs.fRecycle;
-	settings.fMix = m_pParams->m_rtpcs.fMix;
-	settings.fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
-
-	const AkReal32 fSplice = m_pParams->m_rtpcs.fSplice;
-	const AkReal32 fDelay = m_pParams->m_rtpcs.fDelay;
-	settings.uSpliceSamples = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);
-	settings.uDelaySamples = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay), m_uSamplesPerFrame);
-	
-	settings.uSmoothingSamples = static_cast<AkUInt32>(settings.uSpliceSamples * k_max_smoothing_ratio * m_pParams->m_rtpcs.fSmoothing);
-
-	return settings;
-}
-
-
 inline void maggilizerFX::ProcessChannel(
 	AkReal32* pBuffer,
 	AkUInt32 uBufferSize,
@@ -239,16 +243,18 @@ inline void maggilizerFX::ProcessChannel(
 {
 	AkZeroMemLarge(m_pScratchBuffer, sizeof(AkReal32) * m_uSamplesPerFrame);
 	
-	if (pSplice->IsReady())
+	if (pSplice->IsProcessingComplete())
 	{
 		pSplice->PrepareNextSplice(settings);
 	}
 
+	// write the splice output into the scratch buffer so it can be mixed 
 	pSplice->Process(pCacheBuffer, uBufferSize, m_pScratchBuffer, pBuffer);
 
 	// Write the input buffer to the cache buffer
 	pCacheBuffer->WriteBlock(pBuffer, uBufferSize);
 
+	// BAD: If recycle has mixed output back into pBuffer above, it will invalidate a 0-mixed output here
 	MixBufferBIntoA(pBuffer, m_pScratchBuffer, uBufferSize, settings.fMix);
 
 	// Handle tail

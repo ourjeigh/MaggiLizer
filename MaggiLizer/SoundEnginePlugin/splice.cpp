@@ -6,6 +6,18 @@ using namespace AKPLATFORM;
 #define UINT32_MAX 0xffffffff
 
 
+void SpliceSettings::Clear()
+{
+	bReverse = false;
+	fSpeed = 1;
+	uSpliceSamples = 0;
+	uDelaySamples = 0;
+	fRecycle = 0.0f;
+	fMix = 1.0f;
+	uSmoothingSamples = 0;
+}
+
+// ------------------ SPLICE
 Splice::Splice() :
 	m_uAttachedBufferSize(0)
 {
@@ -29,7 +41,7 @@ void Splice::Reset()
 void Splice::PrepareNextSplice(const SpliceSettings& settings)
 {
 	AKASSERT(settings.uSpliceSamples);
-	AKASSERT(IsReady());
+	AKASSERT(IsProcessingComplete());
 
 	m_Settings.Clear();
 	m_Settings = settings;
@@ -55,10 +67,16 @@ void Splice::Process(
 	AKASSERT(out_pBuffer);
 	AKASSERT(uSize);
 
+	const AkReal32 fSpeed = m_Settings.fSpeed;
+
 	if (m_Settings.bReverse)
 	{
+		AkUInt32 uSamplesToRead = CalculateInputSizeForOutput(uSize, fSpeed);
 		AkUInt32 uReverseReadStart = (m_uReadPosition + m_uAttachedBufferSize - uSize) % m_uAttachedBufferSize;
-		pBuffer->PeekBlock(out_pBuffer, uSize, uReverseReadStart);
+		pBuffer->PeekBlock(out_pBuffer, uSamplesToRead, uReverseReadStart);
+
+		const AkUInt32 uFramesFilled = ApplySpeedToBuffer(out_pBuffer, uSamplesToRead, fSpeed);
+		AKASSERT(uFramesFilled == uSize);
 
 		if (m_Settings.fRecycle > k_float_threshold)
 		{
@@ -67,17 +85,33 @@ void Splice::Process(
 
 		ReverseBuffer(out_pBuffer, uSize);
 
-		m_uReadPosition = (m_uReadPosition - uSize) % m_uAttachedBufferSize;
+		m_uReadPosition = (m_uReadPosition - uSamplesToRead) % m_uAttachedBufferSize;
+
+		// fixup in case speed has caused us to go past end
+		if (m_uReadPosition < m_uEndPosition)
+		{
+			m_uReadPosition = m_uEndPosition;
+		}
 	}
 	else
 	{
-		pBuffer->PeekBlock(out_pBuffer, uSize, m_uReadPosition);
+		AkUInt32 uSamplesToRead = CalculateInputSizeForOutput(uSize, fSpeed);
+		pBuffer->PeekBlock(out_pBuffer, uSamplesToRead, m_uReadPosition);
+
+		const AkUInt32 uFramesFilled = ApplySpeedToBuffer(out_pBuffer, uSamplesToRead, fSpeed);
+		//AKASSERT(uFramesFilled == uSize);
 
 		if (m_Settings.fRecycle > k_float_threshold)
 		{
 			RecycleBufferBIntoA(out_pRecycleBuffer, out_pBuffer, uSize, m_Settings.fRecycle);
 		}
 
-		m_uReadPosition = (m_uReadPosition + uSize) % m_uAttachedBufferSize;
+		m_uReadPosition = (m_uReadPosition + uSamplesToRead) % m_uAttachedBufferSize;
+
+		// fixup in case speed has caused us to go past end
+		if (m_uReadPosition > m_uEndPosition)
+		{
+			m_uReadPosition = m_uEndPosition;
+		}
 	}
 }

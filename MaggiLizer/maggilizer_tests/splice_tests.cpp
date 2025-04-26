@@ -60,7 +60,7 @@ TEST(Splice, Process_Forward)
 		}
 	}
 
-	ASSERT_TRUE(splice.IsReady());
+	ASSERT_TRUE(splice.IsProcessingComplete());
 	splice.PrepareNextSplice(settings);
 
 	// Second splice
@@ -77,7 +77,7 @@ TEST(Splice, Process_Forward)
 		}
 	}
 
-	ASSERT_TRUE(splice.IsReady());
+	ASSERT_TRUE(splice.IsProcessingComplete());
 	splice.PrepareNextSplice(settings);
 
 	// Third splice
@@ -155,7 +155,7 @@ TEST(Splice, Process_Reverse)
 		}
 	}
 
-	ASSERT_FALSE(splice.IsReady());
+	ASSERT_FALSE(splice.IsProcessingComplete());
 
 	// Second splice
 	{
@@ -171,7 +171,7 @@ TEST(Splice, Process_Reverse)
 		}
 	}
 
-	ASSERT_TRUE(splice.IsReady());
+	ASSERT_TRUE(splice.IsProcessingComplete());
 	splice.PrepareNextSplice(settings);
 
 	// Third frame
@@ -188,7 +188,7 @@ TEST(Splice, Process_Reverse)
 		}
 	}
 
-	ASSERT_FALSE(splice.IsReady());
+	ASSERT_FALSE(splice.IsProcessingComplete());
 
 	// Fourth frame
 	{
