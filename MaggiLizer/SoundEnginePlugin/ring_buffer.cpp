@@ -102,7 +102,8 @@ AkUInt32 RingBuffer::PeekBlock(AkReal32* out_pData, const AkUInt32 in_uSize, con
 	return out_uReadPosition;
 }
 
-// private
+// ----- Private
+
 AkUInt32 RingBuffer::ReadBlockInternal(AkReal32* out_pData, const AkUInt32 in_uSize, AkUInt32& inout_uReadPosition) const
 {
 	AKASSERT(out_pData);

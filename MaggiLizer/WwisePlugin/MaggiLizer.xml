@@ -70,7 +70,7 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
+			<!--<Property Name="delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
 				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
 				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>3</AudioEnginePropertyID>
@@ -82,7 +82,7 @@ for the documentation about the plugin xml format
 						</Range>
 					</ValueRestriction>
 				</Restrictions>
-			</Property>
+			</Property>-->
 			<Property Name="recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
 				<DefaultValue>25.0</DefaultValue>
@@ -109,7 +109,7 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="smoothing" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Smoothing">
+			<!--<Property Name="smoothing" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Smoothing">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
 				<DefaultValue>50.0</DefaultValue>
 				<AudioEnginePropertyID>6</AudioEnginePropertyID>
@@ -121,7 +121,7 @@ for the documentation about the plugin xml format
 						</Range>
 					</ValueRestriction>
 				</Restrictions>
-			</Property>
+			</Property>-->
 		</Properties>
 	</EffectPlugin>
 </PluginModule>

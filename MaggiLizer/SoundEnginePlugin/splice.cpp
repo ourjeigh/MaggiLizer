@@ -108,30 +108,19 @@ AkUInt32 Splice::PushToBuffer(RingBuffer& out_pBuffer, bool bApplySmoothing)
 		AkUInt32 fFramesLeftToWrite = uFramesToWrite - uFramesWritten;
 		if (bApplySmoothing && uFramesWritten < m_uSmoothingFrames)
 		{
-			//AkReal32 fOutputSmoothed = CalculateEqualPowerFadeIn(uFramesWritten, m_uSmoothingFrames, fOutput);
-			AkReal32 fOutputSmoothed= CalculateEqualPowerXfade(uFramesWritten, m_uSmoothingFrames, out_pBuffer.m_pData[uWritePosition], fOutput);
-			fOutput = fOutputSmoothed;
-			/*AkReal32 weight = static_cast<AkReal32>(uFramesWritten) / m_uSmoothingFrames;
-			fOutput = CalculateWetDryMix(out_pBuffer.m_pData[out_pBuffer.m_uWritePosition], fOutput, weight);*/
+			fOutput = CalculateEqualPowerXfade(uFramesWritten, m_uSmoothingFrames, out_pBuffer.m_pData[uWritePosition], fOutput);
 		}
 		else if (bApplySmoothing && fFramesLeftToWrite <= m_uSmoothingFrames)
 		{
-			//AkReal32 fOutputSmoothed = CalculateEqualPowerFadeOut(m_uSmoothingFrames - fFramesLeftToWrite + 1, m_uSmoothingFrames, fOutput);
-			AkReal32 fOutputSmoothed = CalculateEqualPowerXfade(m_uSmoothingFrames - fFramesLeftToWrite + 1, m_uSmoothingFrames, fOutput, out_pBuffer.m_pData[uWritePosition]);
-			fOutput = fOutputSmoothed;
-			/*AkReal32 weight = static_cast<AkReal32>(uFramesToWrite - uFramesWritten - 1) / m_uSmoothingFrames;
-			fOutput = CalculateWetDryMix(out_pBuffer.m_pData[out_pBuffer.m_uWritePosition], fOutput, weight);*/
+			fOutput = CalculateEqualPowerXfade(m_uSmoothingFrames - fFramesLeftToWrite + 1, m_uSmoothingFrames, fOutput, out_pBuffer.m_pData[uWritePosition]);
 		}
 
 		out_pBuffer.m_pData[uWritePosition++] = fOutput;
 		uWritePosition %= out_pBuffer.m_uSize;
 
-		//AKASSERT(out_pBuffer.m_uReadPosition != out_pBuffer.m_uWritePosition);
-
 		uFramesWritten++;
 	}
 	
-	//AKASSERT(out_pBuffer.m_uReadPosition != out_pBuffer.m_uWritePosition);
 	return uFramesWritten;
 }
 

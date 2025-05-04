@@ -35,7 +35,7 @@ typedef AkReal32* AK_RESTRICT AKReal32_Restrict;
 
 const AkReal32 k_playback_buffer_seconds = 5.0f;
 const AkReal32 k_max_splice_buffer_seconds = 1.0f;
-const AkUInt16 k_crossfade_frames = 256; // 1024; // this is good down to ~40Hz so we may need to add HPF
+const AkUInt16 k_crossfade_frames = 256;
 
 AK::IAkPlugin* CreatemaggilizerFX(AK::IAkPluginMemAlloc* in_pAllocator)
 {
@@ -182,7 +182,7 @@ void maggilizerFX::Execute(AkAudioBuffer* io_pBuffer)
 
 	const AkReal32 fSpeed = CalculateSpeed(m_pParams->m_rtpcs.fPitch);
 	
-	const AkUInt32 uSpliceSize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);// +k_crossfade_frames * 2;
+	const AkUInt32 uSpliceSize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fSplice), m_uSamplesPerFrame);
 	const AkUInt32 uDelaySize = AK_ALIGN_TO_NEXT_BOUNDARY(ConvertMillisecondsToSamples(m_uSampleRate, m_pParams->m_rtpcs.fDelay), m_uSamplesPerFrame);
 
 	// Update Tail Handler
@@ -258,7 +258,7 @@ inline void maggilizerFX::ProcessChannel(
 		// handle delay by advancing the write position by the delay amount before writing splice data in
 		if (uDelaySize > 0)
 		{
-			//pPlayback->WriteSilentBlock(uDelaySize);
+			pPlayback->WriteSilentBlock(uDelaySize);
 		}
 
 		// write the processed splice into the playback buffer

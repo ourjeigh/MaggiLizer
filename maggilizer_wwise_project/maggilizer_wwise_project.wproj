@@ -9220,11 +9220,6 @@
 								<Value>False</Value>
 							</ValueList>
 						</Property>
-						<Property Name="delay" Type="Real32">
-							<ValueList>
-								<Value>0</Value>
-							</ValueList>
-						</Property>
 						<Property Name="mix" Type="Real32">
 							<ValueList>
 								<Value>100</Value>
@@ -9243,11 +9238,6 @@
 						<Property Name="reverse" Type="bool">
 							<ValueList>
 								<Value>False</Value>
-							</ValueList>
-						</Property>
-						<Property Name="smoothing" Type="Real32">
-							<ValueList>
-								<Value>50</Value>
 							</ValueList>
 						</Property>
 						<Property Name="splice" Type="Real32">
