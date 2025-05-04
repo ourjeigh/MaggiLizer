@@ -184,3 +184,16 @@ TEST(Utilities, ApplySpeed_SpeedDouble)
 		ASSERT_FLOAT_EQ(expected[index], buffer[index]);
 	}
 }
+
+TEST(Utilities, ApplySpeed_SpeedLongBuffer)
+{
+	const AkUInt32 uSize = 512;
+	AkReal32 buffer[uSize];
+	FillBufferWithRandomData(buffer, uSize);
+
+	AkReal32 fSpeed = 0.6f;
+	AkUInt32 uFramesToProcess = CalculateInputSizeForOutput(uSize, fSpeed);
+	AkUInt32 uFramesFilled = ApplySpeedToBuffer(buffer, uFramesToProcess, fSpeed);
+
+	ASSERT_EQ(uFramesFilled, uSize);
+}

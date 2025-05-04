@@ -161,7 +161,7 @@ inline static AkUInt32 ApplySpeedToBuffer(
 	if (fSpeed <= 0.0f) return 0; // Handle invalid speeds gracefully
 
 	// Calculate the new size after resampling
-	AkUInt32 uOutputSize = static_cast<AkUInt32>(uSize / fSpeed);
+	AkUInt32 uOutputSize = static_cast<AkUInt32>(ceil(uSize / fSpeed));
 	
 	AkUInt32 uWriteOffset = (uSize > uOutputSize) ? (uSize - uOutputSize) : 0;
 

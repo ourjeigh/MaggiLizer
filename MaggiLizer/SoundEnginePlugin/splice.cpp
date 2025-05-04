@@ -99,7 +99,7 @@ void Splice::Process(
 		pBuffer->PeekBlock(out_pBuffer, uSamplesToRead, m_uReadPosition);
 
 		const AkUInt32 uFramesFilled = ApplySpeedToBuffer(out_pBuffer, uSamplesToRead, fSpeed);
-		//AKASSERT(uFramesFilled == uSize);
+		AKASSERT(uFramesFilled == uSize);
 
 		if (m_Settings.fRecycle > k_float_threshold)
 		{
