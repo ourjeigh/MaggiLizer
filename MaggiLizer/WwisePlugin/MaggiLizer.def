@@ -1,4 +1,3 @@
-LIBRARY "MaggiLizer"
+LIBRARY "maggilizer"
 
 EXPORTS
-  AkCreatePlugin

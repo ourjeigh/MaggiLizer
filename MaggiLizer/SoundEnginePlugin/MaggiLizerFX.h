@@ -21,52 +21,91 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 *******************************************************************************/
 
-#ifndef MaggiLizerFX_H
-#define MaggiLizerFX_H
+#ifndef maggilizerFX_H
+#define maggilizerFX_H
 
-#include "MaggiLizerFXParams.h"
-#include "MaggiLizerFXDSP.h"
+#include "maggilizerFXParams.h"
+//#include "AK/DSP/AkDelayLineMemory.h"
+#include "AK/Plugin/PluginServices/AkFXTailHandler.h"
+#include "ring_buffer.h"
+#include "splice.h"
+
+const int k_max_supported_channels = 1;
 
 /// See https://www.audiokinetic.com/library/edge/?source=SDK&id=soundengine__plugins__effects.html
 /// for the documentation about effect plug-ins
-class MaggiLizerFX : public AK::IAkInPlaceEffectPlugin
+class maggilizerFX
+	: public AK::IAkInPlaceEffectPlugin
 {
 public:
-    MaggiLizerFX();
-    ~MaggiLizerFX();
+	maggilizerFX();
+	~maggilizerFX();
 
-    /// Plug-in initialization.
-    /// Prepares the plug-in for data processing, allocates memory and sets up the initial conditions.
-    AKRESULT Init(AK::IAkPluginMemAlloc*        in_pAllocator, 
-                  AK::IAkEffectPluginContext*   in_pContext, 
-                  AK::IAkPluginParam*           in_pParams, 
-                  AkAudioFormat&                in_rFormat);
+	/// Plug-in initialization.
+	/// Prepares the plug-in for data processing, allocates memory and sets up the initial conditions.
+	AKRESULT Init(AK::IAkPluginMemAlloc* in_pAllocator, AK::IAkEffectPluginContext* in_pContext, AK::IAkPluginParam* in_pParams, AkAudioFormat& in_rFormat) override;
 
-    /// Release the resources upon termination of the plug-in.
-    AKRESULT Term(AK::IAkPluginMemAlloc* in_pAllocator);
+	/// Release the resources upon termination of the plug-in.
+	AKRESULT Term(AK::IAkPluginMemAlloc* in_pAllocator) override;
 
-    /// The reset action should perform any actions required to reinitialize the
-    /// state of the plug-in to its original state (e.g. after Init() or on effect bypass).
-    AKRESULT Reset();
+	/// The reset action should perform any actions required to reinitialize the
+	/// state of the plug-in to its original state (e.g. after Init() or on effect bypass).
+	AKRESULT Reset() override;
 
-    /// Plug-in information query mechanism used when the sound engine requires
-    /// information about the plug-in to determine its behavior.
-    AKRESULT GetPluginInfo(AkPluginInfo& out_rPluginInfo);
+	/// Plug-in information query mechanism used when the sound engine requires
+	/// information about the plug-in to determine its behavior.
+	AKRESULT GetPluginInfo(AkPluginInfo& out_rPluginInfo) override;
 
-    /// Effect plug-in DSP execution.
-    void Execute(AkAudioBuffer* io_pBuffer);
+	/// Effect plug-in DSP execution.
+	void Execute(AkAudioBuffer* io_pBuffer) override;
 
-    /// Execution processing when the voice is virtual. Nothing special to do for this effect.
-    AKRESULT TimeSkip(AkUInt32 in_uFrames) { return AK_DataReady; }
+	/// Skips execution of some frames, when the voice is virtual playing from elapsed time.
+	/// This can be used to simulate processing that would have taken place (e.g. update internal state).
+	/// Return AK_DataReady or AK_NoMoreData, depending if there would be audio output or not at that point.
+	AKRESULT TimeSkip(AkUInt32 in_uFrames) override;
 
 private:
-    MaggiLizerFXParams* m_pParams;
-    AK::IAkPluginMemAlloc* m_pAllocator;
-    AK::IAkEffectPluginContext* m_pContext;
-    MaggiLizerFXDSP* m_pDSP;
+
+	inline void maggilizerFX::ProcessChannel(
+		AkReal32* pBuffer,
+		AkUInt32 uBufferSize,
+		Splice* pSplice,
+		RingBuffer* pPlayback,
+		bool bReverse,
+		AkReal32 fSpeed,
+		AkUInt32 uSpliceSize,
+		AkUInt32 uDelaySize,
+		AkReal32 fRecycle,
+		AkReal32 fSmoothing,
+		AkReal32 fMix,
+		AkReal32 fTailMix);
+
+	// this pointer is guaranteed to be valid for the lifetime of the effect instance
+	maggilizerFXParams* m_pParams;
+
+	AkUInt16 m_uChannelCount;
+	AkUInt32 m_uSampleRate;
+	AkUInt32 m_uSamplesPerFrame;
+
+	AkReal32* m_pSpliceBufferMemory;
+	AkUInt32 m_uSpliceBufferSize;
+
+	AkReal32* m_pPlaybackBufferMemory;
+	AkUInt32 m_uPlaybackBufferSize;
+
+	// small buffer for mixing input and playback buffers within Execute
+	AkReal32* m_pScratchBuffer;
+
+	// one per channel
+	Splice* m_pSplices;
+	RingBuffer* m_pPlaybacks;
+
+	// responsible for creating valid frames once input is finished to allow for delay/recycle tail
+	AkFXTailHandler m_TailHandler;
+	AkUInt32 m_uTailPosition;
 };
 
-#endif // MaggiLizerFX_H
+#endif // maggilizerFX_H

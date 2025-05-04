@@ -21,20 +21,20 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 *******************************************************************************/
 
-#ifndef MaggiLizerConfig_H
-#define MaggiLizerConfig_H
+#ifndef maggilizerConfig_H
+#define maggilizerConfig_H
 
 // NB: In order to properly change the CompanyID / PluginID, you must change them:
 // - In this file;
 // - In the xml file located in the WwisePlugin directory;
 // - In the xml file located in the FactoryAssets directory.
-namespace MaggiLizerConfig
+namespace maggilizerConfig
 {
     static const unsigned short CompanyID = 64;
-    static const unsigned short PluginID = 4000;
+    static const unsigned short PluginID = 2246;
 }
 
-#endif // MaggiLizerConfig_H
+#endif // maggilizerConfig_H

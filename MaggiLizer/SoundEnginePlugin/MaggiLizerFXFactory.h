@@ -21,12 +21,12 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 *******************************************************************************/
 
-#ifndef MaggiLizerFXFactory_H
-#define MaggiLizerFXFactory_H
+#ifndef maggilizerFXFactory_H
+#define maggilizerFXFactory_H
 
-AK_STATIC_LINK_PLUGIN(MaggiLizerFX)
+AK_STATIC_LINK_PLUGIN(maggilizerFX)
 
-#endif // MaggiLizerFXFactory_H
+#endif // maggilizerFXFactory_H

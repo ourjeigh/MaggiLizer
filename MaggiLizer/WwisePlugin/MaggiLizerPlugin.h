@@ -21,39 +21,26 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 *******************************************************************************/
 
 #pragma once
 
-#include <windows.h>
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS
-#include <atlstr.h>
-
-#include <AK/Wwise/AudioPlugin.h>
+#include <AK/Wwise/Plugin.h>
 
 /// See https://www.audiokinetic.com/library/edge/?source=SDK&id=plugin__dll.html
 /// for the documentation about Authoring plug-ins
-class MaggiLizerPlugin
-    : public AK::Wwise::DefaultAudioPluginImplementation
+class maggilizerPlugin final
+    : public AK::Wwise::Plugin::AudioPlugin
 {
 public:
-    MaggiLizerPlugin();
-    ~MaggiLizerPlugin();
-
-    /// This will be called to delete the plug-in.
-    /// The object is responsible for deleting itself when this method is called.
-    void Destroy() override;
-
-    /// The property set interface is given to the plug-in through this method.
-    /// It is called by Wwise during initialization of the plug-in, before most other calls.
-    void SetPluginPropertySet(AK::Wwise::IPluginPropertySet* in_pPSet) override;
+    maggilizerPlugin();
+    ~maggilizerPlugin();
 
     /// This function is called by Wwise to obtain parameters that will be written to a bank.
     /// Because these can be changed at run-time, the parameter block should stay relatively small.
     // Larger data should be put in the Data Block.
-    bool GetBankParameters(const GUID& in_guidPlatform, AK::Wwise::IWriteData* in_pDataWriter) const override;
-
-private:
-    AK::Wwise::IPluginPropertySet* m_pPSet;
+    bool GetBankParameters(const GUID & in_guidPlatform, AK::Wwise::Plugin::DataWriter& in_dataWriter) const override;
 };
+
+DECLARE_AUDIOPLUGIN_CONTAINER(maggilizer);	// Exposes our PluginContainer structure that contains the info for our plugin

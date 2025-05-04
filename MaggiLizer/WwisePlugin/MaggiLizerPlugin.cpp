@@ -21,40 +21,53 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 *******************************************************************************/
 
-#include "MaggiLizerPlugin.h"
-#include "../SoundEnginePlugin/MaggiLizerFXFactory.h"
+#include "maggilizerPlugin.h"
+#include "../SoundEnginePlugin/maggilizerFXFactory.h"
 
-#include <AK/Tools/Common/AkAssert.h>
-
-MaggiLizerPlugin::MaggiLizerPlugin()
-    : m_pPSet(nullptr)
+maggilizerPlugin::maggilizerPlugin()
 {
 }
 
-MaggiLizerPlugin::~MaggiLizerPlugin()
+maggilizerPlugin::~maggilizerPlugin()
 {
 }
 
-void MaggiLizerPlugin::Destroy()
-{
-    delete this;
-}
-
-void MaggiLizerPlugin::SetPluginPropertySet(AK::Wwise::IPluginPropertySet* in_pPSet)
-{
-    m_pPSet = in_pPSet;
-}
-
-bool MaggiLizerPlugin::GetBankParameters(const GUID& in_guidPlatform, AK::Wwise::IWriteData* in_pDataWriter) const
+bool maggilizerPlugin::GetBankParameters(const GUID& in_guidPlatform, AK::Wwise::Plugin::DataWriter& in_dataWriter) const
 {
     // Write bank data here
-    // TODO: Not sure how to write all 5 parameters here
-    CComVariant varProp;
-    m_pPSet->GetValue(in_guidPlatform, L"Reverse", varProp);
-    in_pDataWriter->WriteReal32(varProp.fltVal);
+    // See maggilizer.xml property Names
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "reverse"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "pitch"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "splice"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "delay"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "recycle"));
+    in_dataWriter.WriteReal32(m_propertySet.GetReal32(in_guidPlatform, "mix"));
 
     return true;
 }
+
+DEFINE_AUDIOPLUGIN_CONTAINER(maggilizer);											// Create a PluginContainer structure that contains the info for our plugin
+EXPORT_AUDIOPLUGIN_CONTAINER(maggilizer);											// This is a DLL, we want to have a standardized name
+ADD_AUDIOPLUGIN_CLASS_TO_CONTAINER(                                             // Add our CLI class to the PluginContainer
+    maggilizer,        // Name of the plug-in container for this shared library
+    maggilizerPlugin,  // Authoring plug-in class to add to the plug-in container
+    maggilizerFX       // Corresponding Sound Engine plug-in class
+);
+DEFINE_PLUGIN_REGISTER_HOOK
+
+#ifdef _DEBUG
+#define DEFINEDUMMYASSERTHOOK void AkAssertHookFunc( \
+    const char* in_pszExpression,\
+    const char* in_pszFileName,\
+    int in_lineNumber)\
+    {\
+    __debugbreak();\
+    __halt();\
+    }\
+    AkAssertHook g_pAssertHook = AkAssertHookFunc;
+#endif // _DEBUG
+
+DEFINEDUMMYASSERTHOOK;							// Placeholder assert hook for Wwise plug-ins using AKASSERT (cassert used by default)

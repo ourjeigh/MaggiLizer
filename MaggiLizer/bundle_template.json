@@ -2,16 +2,16 @@
 // for the documentation about the bundle_template.json format
 {
     // Unique identifier of this bundle. Id must be unique across all existing plugins and versions.
-    "id": "RJ Mattingly.MaggiLizer.${year}_${major}_${minor}_${build}",
+    "id": "RJ Mattingly.maggilizer.${year}_${major}_${minor}_${build}",
 
     // Name displayed in the Wwise Launcher for this bundle
     "name": "MaggiLizer",
     
     // Tag uniquely identifying the plug-in (format [0-9A-z_]+, 50 characters maximum)
-    "tag": "MaggiLizer",
+    "tag": "maggilizer",
 
     // Description displayed in the Wwise Launcher for this bundle
-    "description": "Crystallizer knockoff Wwise Plugin",
+    "description": "a plugin for fun and science",
 
     // Vendor name displayed in the Wwise Launcher for this bundle
     "vendor": "RJ Mattingly",

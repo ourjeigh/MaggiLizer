@@ -22,7 +22,7 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2023 Audiokinetic Inc.
 -->
 <!--
 See https://www.audiokinetic.com/library/edge/?source=Help&id=import_factory_assets
@@ -30,6 +30,6 @@ for more information on factory assets
 -->
 <Manifest Name="MaggiLizer" Type="Presets">
   <Dependencies>
-    <Plugin PluginName="MaggiLizer" CompanyID="64" PluginID="4000" PluginType="3"/>
+    <Plugin PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3"/>
   </Dependencies>
 </Manifest>

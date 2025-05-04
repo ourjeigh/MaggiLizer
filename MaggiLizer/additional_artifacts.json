@@ -5,15 +5,15 @@
     "Authoring": [
         {
             // The files in the Help folder located at the root of the plug-in directory
-            // will be packaged so that they are installed in the Authoring/Help/MaggiLizer folder
+            // will be packaged so that they are installed in the Authoring/Help/maggilizer folder
             // of a Wwise installation
-            "Authoring/Help/MaggiLizer": ["Help/*"],
+            "Authoring/Help/maggilizer": ["Help/*"],
             // Similarly for the files in the FactoryAssets folder
-            "Authoring/Data/Factory Assets/MaggiLizer": ["FactoryAssets/*"]
+            "Authoring/Data/Factory Assets/maggilizer": ["FactoryAssets/*"]
         }
     ]
 
-    // List of additional files to package for the <DeploynmentPlatform> platform
+    // List of additional files to package for the <DeploymentPlatform> platform
     // "<DeploymentPlatform>": [
     //     // Each entry is either:
     //     //    - A path relative to the root of your Wwise installation (can contain glob patterns);

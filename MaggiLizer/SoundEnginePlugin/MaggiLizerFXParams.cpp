@@ -21,44 +21,38 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 *******************************************************************************/
 
-#include "MaggiLizerFXParams.h"
+#include "maggilizerFXParams.h"
 
 #include <AK/Tools/Common/AkBankReadHelpers.h>
 
-MaggiLizerFXParams::MaggiLizerFXParams()
+maggilizerFXParams::maggilizerFXParams()
+{
+    m_rtpcs.clear();
+}
+
+maggilizerFXParams::~maggilizerFXParams()
 {
 }
 
-MaggiLizerFXParams::~MaggiLizerFXParams()
+maggilizerFXParams::maggilizerFXParams(const maggilizerFXParams& in_rParams)
 {
-}
-
-MaggiLizerFXParams::MaggiLizerFXParams(const MaggiLizerFXParams& in_rParams)
-{
-    RTPC = in_rParams.RTPC;
-    //NonRTPC = in_rParams.NonRTPC;
+    m_rtpcs = in_rParams.m_rtpcs;
     m_paramChangeHandler.SetAllParamChanges();
 }
 
-AK::IAkPluginParam* MaggiLizerFXParams::Clone(AK::IAkPluginMemAlloc* in_pAllocator)
+AK::IAkPluginParam* maggilizerFXParams::Clone(AK::IAkPluginMemAlloc* in_pAllocator)
 {
-    return AK_PLUGIN_NEW(in_pAllocator, MaggiLizerFXParams(*this));
+    return AK_PLUGIN_NEW(in_pAllocator, maggilizerFXParams(*this));
 }
 
-AKRESULT MaggiLizerFXParams::Init(AK::IAkPluginMemAlloc* in_pAllocator, const void* in_pParamsBlock, AkUInt32 in_ulBlockSize)
+AKRESULT maggilizerFXParams::Init(AK::IAkPluginMemAlloc* in_pAllocator, const void* in_pParamsBlock, AkUInt32 in_ulBlockSize)
 {
     if (in_ulBlockSize == 0)
     {
-        // Initialize default parameters here
-        RTPC.bReverse = false;
-        RTPC.fPitch = 0.0f;
-        RTPC.fSplice = 0.0f;
-        RTPC.fDelay = 0.0f;
-        RTPC.fRecycle = 0.0f;
-        RTPC.fMix = 0.0f;
+        m_rtpcs.clear();
         m_paramChangeHandler.SetAllParamChanges();
         return AK_Success;
     }
@@ -66,62 +60,67 @@ AKRESULT MaggiLizerFXParams::Init(AK::IAkPluginMemAlloc* in_pAllocator, const vo
     return SetParamsBlock(in_pParamsBlock, in_ulBlockSize);
 }
 
-AKRESULT MaggiLizerFXParams::Term(AK::IAkPluginMemAlloc* in_pAllocator)
+AKRESULT maggilizerFXParams::Term(AK::IAkPluginMemAlloc* in_pAllocator)
 {
     AK_PLUGIN_DELETE(in_pAllocator, this);
     return AK_Success;
 }
 
-AKRESULT MaggiLizerFXParams::SetParamsBlock(const void* in_pParamsBlock, AkUInt32 in_ulBlockSize)
+AKRESULT maggilizerFXParams::SetParamsBlock(const void* in_pParamsBlock, AkUInt32 in_ulBlockSize)
 {
     AKRESULT eResult = AK_Success;
     AkUInt8* pParamsBlock = (AkUInt8*)in_pParamsBlock;
 
     // Read bank data here
-    RTPC.bReverse = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
-    RTPC.fPitch = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
-    RTPC.fSplice = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
-    RTPC.fDelay = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
-    RTPC.fRecycle = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
-    RTPC.fMix = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    // test this!
+    m_rtpcs.bReverse = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) != 0;
+    m_rtpcs.fPitch = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    m_rtpcs.fSplice = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    m_rtpcs.fDelay = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize);
+    m_rtpcs.fRecycle = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) / 100.0f;
+    m_rtpcs.fMix = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) / 100.0f; 
+	m_rtpcs.fSmoothing = READBANKDATA(AkReal32, pParamsBlock, in_ulBlockSize) / 100.0f;
     CHECKBANKDATASIZE(in_ulBlockSize, eResult);
     m_paramChangeHandler.SetAllParamChanges();
 
     return eResult;
 }
 
-AKRESULT MaggiLizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in_pValue, AkUInt32 in_ulParamSize)
+AKRESULT maggilizerFXParams::SetParam(AkPluginParamID in_paramID, const void* in_pValue, AkUInt32 in_ulParamSize)
 {
     AKRESULT eResult = AK_Success;
 
     // Handle parameter change here
     switch (in_paramID)
     {
-    case PARAM_REVERSE_ID:
-        RTPC.bReverse = (*(AkReal32*)(in_pValue)) != 0; // bools are conveyed as 0 false, !=0 true
-        m_paramChangeHandler.SetParamChange(PARAM_REVERSE_ID);
+    case param_id_reverse:
+        m_rtpcs.bReverse = (*static_cast<const AkReal32*>(in_pValue)) != 0; // bools are conveyed as 0 false, !=0 true
+        m_paramChangeHandler.SetParamChange(param_id_reverse);
         break;
-    case PARAM_PITCH_ID:
-        RTPC.fPitch = *(AkReal32*)(in_pValue);
-        m_paramChangeHandler.SetParamChange(PARAM_PITCH_ID);
+    case param_id_pitch:
+        m_rtpcs.fPitch = *static_cast<const AkReal32*>(in_pValue);
+        m_paramChangeHandler.SetParamChange(param_id_pitch);
         break;
-    // TODO: Implement Delay
-    // -- issue https://github.com/rjmattingly/MaggiLizer/projects/1#card-49020915
-    case PARAM_DELAY_ID:
-        RTPC.fDelay = *(AkReal32*)(in_pValue);
-        m_paramChangeHandler.SetParamChange(PARAM_DELAY_ID);
+    case param_id_delay:
+        m_rtpcs.fDelay = *static_cast<const AkReal32*>(in_pValue);
+        m_paramChangeHandler.SetParamChange(param_id_delay);
         break;
-    case PARAM_SPLICE_ID:
-        RTPC.fSplice = *(AkReal32*)(in_pValue);
-        m_paramChangeHandler.SetParamChange(PARAM_SPLICE_ID);
+    case param_id_splice:
+        m_rtpcs.fSplice = *static_cast<const AkReal32*>(in_pValue);
+        m_paramChangeHandler.SetParamChange(param_id_splice);
         break;
-    case PARAM_RECYCLE_ID:
-        RTPC.fRecycle = *(AkReal32*)(in_pValue) / 100; //convert from 0-100% to 0-1
-        m_paramChangeHandler.SetParamChange(PARAM_RECYCLE_ID);
+    case param_id_recycle:
+        m_rtpcs.fRecycle = *static_cast<const AkReal32*>(in_pValue) / 100.0f; // convert from 0-100% to 0-1
+        m_paramChangeHandler.SetParamChange(param_id_recycle);
         break;
-    case PARAM_MIX_ID:
-        RTPC.fMix = *(AkReal32*)(in_pValue)/100; //convert from 0-100% to 0-1
-        m_paramChangeHandler.SetParamChange(PARAM_MIX_ID);
+    case param_id_mix:
+        m_rtpcs.fMix = *static_cast<const AkReal32*>(in_pValue) / 100.0f; // convert from 0-100% to 0-1
+        m_paramChangeHandler.SetParamChange(param_id_mix);
+        break;
+    case param_id_smoothing:
+        m_rtpcs.fSmoothing = *static_cast<const AkReal32*>(in_pValue) / 100.0f; // convert from 0-100% to 0-1
+        m_paramChangeHandler.SetParamChange(param_id_smoothing);
+        break;
     default:
         eResult = AK_InvalidParameter;
         break;

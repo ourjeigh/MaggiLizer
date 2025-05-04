@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A79706DC-4423-4269-8CB7-7898AD54B147}" SchemaVersion="123">
+	<AudioObjects>
+		<WorkUnit Name="Default Work Unit" ID="{A79706DC-4423-4269-8CB7-7898AD54B147}" PersistMode="Standalone">
+			<ChildrenList>
+				<Sound Name="test" ID="{1C8E6B29-D6CD-4DE5-BA36-BF197459A0A9}" ShortID="996910526">
+					<PropertyList>
+						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="IsLoopingInfinite" Type="bool" Value="False"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{97BB9AE3-AB5A-4328-8D80-094F362A685E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9EC5B4F4-55DC-4597-91CC-3ADDF55ACC59}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<SourcePlugin Name="Sine" ID="{DC64C857-0B08-4341-93F5-CBB9D39E8659}" ShortID="636550966" PluginName="Wwise Sine" CompanyID="0" PluginID="100">
+							<Language>SFX</Language>
+						</SourcePlugin>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Effects">
+							<Reference>
+								<Local>
+									<EffectSlot Name="" ID="{D24BBF2F-4802-42A2-B00E-FDA9F95ED70A}" ShortID="245445834">
+										<ReferenceList>
+											<Reference Name="Effect">
+												<Custom>
+													<Effect Name="MaggiLizer (Custom)" ID="{350D5583-DCB7-4FFE-840D-39B75690664C}" ShortID="41530067" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
+														<PropertyList>
+															<Property Name="pitch" Type="Real32" Value="-325"/>
+															<Property Name="recycle" Type="Real32" Value="91"/>
+															<Property Name="reverse" Type="bool" Value="True"/>
+															<Property Name="splice" Type="Real32" Value="850"/>
+														</PropertyList>
+													</Effect>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</Local>
+							</Reference>
+						</ObjectList>
+					</ObjectLists>
+					<ActiveSourceList>
+						<ActiveSource Name="Sine" ID="{DC64C857-0B08-4341-93F5-CBB9D39E8659}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="maggi_test_metal_impact_01" ID="{ED91792D-0DDC-4E0E-9B6D-F3FD0C48CC2B}" ShortID="709105813">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{97BB9AE3-AB5A-4328-8D80-094F362A685E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9EC5B4F4-55DC-4597-91CC-3ADDF55ACC59}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="maggi_test_metal_impact_01" ID="{0DBFCB40-F461-4ADD-A7A4-85C509F630CB}">
+							<Language>SFX</Language>
+							<AudioFile>maggi_test_metal_impact_01.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="967626658"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Effects">
+							<Reference>
+								<Local>
+									<EffectSlot Name="" ID="{E807F041-EE69-47AD-9B08-386A0447B33F}" ShortID="91582397">
+										<ReferenceList>
+											<Reference Name="Effect">
+												<Custom>
+													<Effect Name="MaggiLizer (Custom)" ID="{3BE5726B-BEBC-4368-AA5B-CCCB9A3D6E20}" ShortID="747916829" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
+														<PropertyList>
+															<Property Name="pitch" Type="Real32" Value="-500"/>
+															<Property Name="recycle" Type="Real32" Value="86"/>
+															<Property Name="splice" Type="Real32" Value="200"/>
+														</PropertyList>
+													</Effect>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</Local>
+							</Reference>
+						</ObjectList>
+					</ObjectLists>
+					<ActiveSourceList>
+						<ActiveSource Name="maggi_test_metal_impact_01" ID="{0DBFCB40-F461-4ADD-A7A4-85C509F630CB}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="maggi_test_metal_scrape_01" ID="{621144C2-88C3-4F74-8185-7B221222113F}" ShortID="221708485">
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{97BB9AE3-AB5A-4328-8D80-094F362A685E}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{9EC5B4F4-55DC-4597-91CC-3ADDF55ACC59}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="maggi_test_metal_scrape_01" ID="{DCBED722-4967-4155-A261-63A79C873DEC}">
+							<Language>SFX</Language>
+							<AudioFile>maggi_test_metal_scrape_01.wav</AudioFile>
+							<MediaIDList>
+								<MediaID ID="889439333"/>
+							</MediaIDList>
+						</AudioFileSource>
+					</ChildrenList>
+					<ObjectLists>
+						<ObjectList Name="Effects">
+							<Reference>
+								<Local>
+									<EffectSlot Name="" ID="{95109F91-5F20-42CC-B3F4-56EBA257A642}" ShortID="921092618">
+										<ReferenceList>
+											<Reference Name="Effect">
+												<Custom>
+													<Effect Name="MaggiLizer (Custom)" ID="{55B69384-0698-45EB-8E26-0CE793F1C3F6}" ShortID="1012224542" PluginName="MaggiLizer" CompanyID="64" PluginID="2246" PluginType="3">
+														<PropertyList>
+															<Property Name="pitch" Type="Real32" Value="-100"/>
+															<Property Name="recycle" Type="Real32" Value="56"/>
+															<Property Name="reverse" Type="bool" Value="True"/>
+															<Property Name="splice" Type="Real32" Value="320"/>
+														</PropertyList>
+													</Effect>
+												</Custom>
+											</Reference>
+										</ReferenceList>
+									</EffectSlot>
+								</Local>
+							</Reference>
+						</ObjectList>
+					</ObjectLists>
+					<ActiveSourceList>
+						<ActiveSource Name="maggi_test_metal_scrape_01" ID="{DCBED722-4967-4155-A261-63A79C873DEC}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+			</ChildrenList>
+		</WorkUnit>
+	</AudioObjects>
+</WwiseDocument>

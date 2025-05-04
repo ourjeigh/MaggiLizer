@@ -21,7 +21,7 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2024 Audiokinetic Inc.
 ------------------------------------------------------------------------------]]
 
 if not _AK_PREMAKE then
@@ -29,8 +29,10 @@ if not _AK_PREMAKE then
 end
 
 local Plugin = {}
-Plugin.name = "MaggiLizer"
-Plugin.factoryheader = "../SoundEnginePlugin/MaggiLizerFXFactory.h"
+Plugin.name = "maggilizer"
+Plugin.factoryheader = "../SoundEnginePlugin/maggilizerFXFactory.h"
+Plugin.appleteamid = ""
+Plugin.signtoolargs = {}
 Plugin.sdk = {}
 Plugin.sdk.static = {}
 Plugin.sdk.shared = {}
@@ -42,13 +44,14 @@ Plugin.sdk.static.includedirs = -- https://github.com/premake/premake-core/wiki/
 }
 Plugin.sdk.static.files = -- https://github.com/premake/premake-core/wiki/files
 {
-    "MaggiLizerFX.cpp",
-    "MaggiLizerFX.h",
-    "MaggiLizerFXParams.cpp",
-    "MaggiLizerFXParams.h",
+    "**.cpp",
+    "**.h",
+    "**.hpp",
+    "**.c",
 }
 Plugin.sdk.static.excludes = -- https://github.com/premake/premake-core/wiki/removefiles
 {
+    "maggilizerFXShared.cpp"
 }
 Plugin.sdk.static.links = -- https://github.com/premake/premake-core/wiki/links
 {
@@ -67,8 +70,8 @@ Plugin.sdk.shared.includedirs =
 }
 Plugin.sdk.shared.files =
 {
-    "MaggiLizerFXShared.cpp",
-    "MaggiLizerFXFactory.h",
+    "maggilizerFXShared.cpp",
+    "maggilizerFXFactory.h",
 }
 Plugin.sdk.shared.excludes =
 {
@@ -89,12 +92,13 @@ Plugin.authoring.includedirs =
 }
 Plugin.authoring.files =
 {
-    "MaggiLizerPlugin.cpp",
-    "MaggiLizerPlugin.h",
-    "MaggiLizer.cpp",
-    "MaggiLizer.h",
-    "MaggiLizer.def",
-    "MaggiLizer.xml",
+    "**.cpp",
+    "**.h",
+    "**.hpp",
+    "**.c",
+    "maggilizer.def",
+    "maggilizer.xml",
+    "**.rc",
 }
 Plugin.authoring.excludes =
 {

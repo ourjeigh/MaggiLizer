@@ -22,55 +22,55 @@ under the Apache License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, either express or implied. See the Apache License for
 the specific language governing permissions and limitations under the License.
 
-  Copyright (c) 2020 Audiokinetic Inc.
+  Copyright (c) 2023 Audiokinetic Inc.
 -->
 <!--
 See https://www.audiokinetic.com/library/edge/?source=SDK&id=plugin__xml.html
 for the documentation about the plugin xml format
 -->
 <PluginModule>
-  <EffectPlugin Name="MaggiLizer" CompanyID="64" PluginID="4000">
-    <PluginInfo>
-      <PlatformSupport>
-        <Platform Name="Any">
-          <CanBeInsertOnBusses>true</CanBeInsertOnBusses>
-          <CanBeInsertOnAudioObjects>true</CanBeInsertOnAudioObjects>
-          <CanBeRendered>true</CanBeRendered>
-        </Platform>
-      </PlatformSupport>
-    </PluginInfo>
-    <Properties>
-			<Property Name="Reverse" Type="bool" SupportRTPCType="Exclusive" DisplayName="Reverse">
-				<DefaultValue>false</DefaultValue>
+	<EffectPlugin Name="MaggiLizer" CompanyID="64" PluginID="2246">
+		<PluginInfo>
+			<PlatformSupport>
+				<Platform Name="Any">
+					<CanBeInsertOnBusses>true</CanBeInsertOnBusses>
+					<CanBeInsertOnAudioObjects>true</CanBeInsertOnAudioObjects>
+					<CanBeRendered>true</CanBeRendered>
+				</Platform>
+			</PlatformSupport>
+		</PluginInfo>
+		<Properties>
+			<Property Name="reverse" Type="bool" SupportRTPCType="Exclusive" DisplayName="Reverse">
+				<DefaultValue>true</DefaultValue>
 				<AudioEnginePropertyID>0</AudioEnginePropertyID>
 			</Property>
-      <Property Name="Pitch" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Pitch">
-        <UserInterface Step="100" Fine="1" Decimals="0" UIMax="1200" />
-        <DefaultValue>0.0</DefaultValue>
-        <AudioEnginePropertyID>1</AudioEnginePropertyID>
-        <Restrictions>
-          <ValueRestriction>
-            <Range Type="Real32">
-              <Min>-1200</Min>
-              <Max>1200</Max>
-            </Range>
-          </ValueRestriction>
-        </Restrictions>
-      </Property>
-			<Property Name="Splice" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Splice">
-				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
+			<Property Name="pitch" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Pitch">
+				<UserInterface Step="100" Fine="1" Decimals="0" UIMax="1200" />
 				<DefaultValue>0.0</DefaultValue>
-				<AudioEnginePropertyID>2</AudioEnginePropertyID>
+				<AudioEnginePropertyID>1</AudioEnginePropertyID>
 				<Restrictions>
 					<ValueRestriction>
 						<Range Type="Real32">
-							<Min>0</Min>
-							<Max>2000</Max>
+							<Min>-1200</Min>
+							<Max>1200</Max>
 						</Range>
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="Delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay (Not Working)">
+			<Property Name="splice" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Splice">
+				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
+				<DefaultValue>250.0</DefaultValue>
+				<AudioEnginePropertyID>2</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>20</Min>
+							<Max>1000</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>
+			<!--<Property Name="delay" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Delay">
 				<UserInterface Step="10" Fine="1" Decimals="0" UIMax="2000" />
 				<DefaultValue>0.0</DefaultValue>
 				<AudioEnginePropertyID>3</AudioEnginePropertyID>
@@ -78,14 +78,14 @@ for the documentation about the plugin xml format
 					<ValueRestriction>
 						<Range Type="Real32">
 							<Min>0</Min>
-							<Max>2000</Max>
+							<Max>500</Max>
 						</Range>
 					</ValueRestriction>
 				</Restrictions>
-			</Property>
-			<Property Name="Recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
+			</Property>-->
+			<Property Name="recycle" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Recycle">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
-				<DefaultValue>0.0</DefaultValue>
+				<DefaultValue>25.0</DefaultValue>
 				<AudioEnginePropertyID>4</AudioEnginePropertyID>
 				<Restrictions>
 					<ValueRestriction>
@@ -96,7 +96,7 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-			<Property Name="Mix" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Mix">
+			<Property Name="mix" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Mix">
 				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
 				<DefaultValue>100.0</DefaultValue>
 				<AudioEnginePropertyID>5</AudioEnginePropertyID>
@@ -109,6 +109,19 @@ for the documentation about the plugin xml format
 					</ValueRestriction>
 				</Restrictions>
 			</Property>
-    </Properties>
-  </EffectPlugin>
+			<!--<Property Name="smoothing" Type="Real32" SupportRTPCType="Exclusive" DisplayName="Smoothing">
+				<UserInterface Step="1" Fine="1" Decimals="0" UIMax="100" />
+				<DefaultValue>50.0</DefaultValue>
+				<AudioEnginePropertyID>6</AudioEnginePropertyID>
+				<Restrictions>
+					<ValueRestriction>
+						<Range Type="Real32">
+							<Min>0</Min>
+							<Max>100</Max>
+						</Range>
+					</ValueRestriction>
+				</Restrictions>
+			</Property>-->
+		</Properties>
+	</EffectPlugin>
 </PluginModule>
